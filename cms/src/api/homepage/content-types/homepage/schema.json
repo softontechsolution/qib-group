@@ -21,7 +21,7 @@
       "type": "string"
     },
     "aboutText": {
-      "type": "blocks"
+      "type": "text"
     },
     "heroImage": {
       "type": "media",
