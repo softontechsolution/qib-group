@@ -18,3 +18,10 @@ export const getProjects = async () => {
   const res = await API.get("/projects?populate=*");
   return res.data.data;
 };
+
+export const submitContact = async (payload: any) => {
+  const res = await API.post("/contacts", {
+    data: payload
+  });
+  return res.data;
+};
