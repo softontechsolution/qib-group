@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "businesses",
+  "info": {
+    "singularName": "business",
+    "pluralName": "businesses",
+    "displayName": "Businesses"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

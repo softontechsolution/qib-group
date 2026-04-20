@@ -7,7 +7,10 @@ export default function Navbar() {
 
       <div className="space-x-6">
         <a href="#">About Us</a>
-        <a href="#">Businesses</a>
+        <a href="#">Insurance</a>
+        <a href="#">ICT</a>
+        <a href="#">Construction</a>
+        <a href="#">Logistics</a>
         <a href="#">Projects</a>
         <a href="#">Contact</a>
       </div>

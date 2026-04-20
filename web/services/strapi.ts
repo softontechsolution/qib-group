@@ -13,3 +13,8 @@ export const getBusinesses = async () => {
   const res = await API.get("/businesses?populate=*");
   return res.data.data;
 };
+
+export const getProjects = async () => {
+  const res = await API.get("/projects?populate=*");
+  return res.data.data;
+};
