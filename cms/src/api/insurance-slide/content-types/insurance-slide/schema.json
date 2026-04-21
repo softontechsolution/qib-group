@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insurance_slides",
+  "info": {
+    "singularName": "insurance-slide",
+    "pluralName": "insurance-slides",
+    "displayName": "Insurance Slides"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

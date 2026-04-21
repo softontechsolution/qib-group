@@ -1,0 +1,30 @@
+{
+  "kind": "singleType",
+  "collectionName": "insurance_pages",
+  "info": {
+    "singularName": "insurance-page",
+    "pluralName": "insurance-pages",
+    "displayName": "Insurance Page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "heroTitle": {
+      "type": "string"
+    },
+    "heroDescription": {
+      "type": "text"
+    },
+    "contactEmail": {
+      "type": "email"
+    },
+    "contactPhone": {
+      "type": "string"
+    },
+    "contactAddress": {
+      "type": "text"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insurance_benefits",
+  "info": {
+    "singularName": "insurance-benefit",
+    "pluralName": "insurance-benefits",
+    "displayName": "Insurance Benefits"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

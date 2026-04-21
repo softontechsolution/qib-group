@@ -40,3 +40,33 @@ export const getTeamMembers = async () => {
   const res = await API.get("/team-members?populate=*");
   return res.data.data;
 };
+
+export const getInsurancePage = async () => {
+  const res = await API.get("/insurance-page");
+  return res.data.data;
+};
+
+export const getInsuranceSlides = async () => {
+  const res = await API.get("/insurance-slides?populate=*");
+  return res.data.data;
+};
+
+export const getInsuranceFeatures = async () => {
+  const res = await API.get("/insurance-features");
+  return res.data.data;
+};
+
+export const getInsurancePolicies = async () => {
+  const res = await API.get("/insurance-policies");
+  return res.data.data;
+};
+
+export const getTestimonials = async () => {
+  const res = await API.get("/testimonials");
+  return res.data.data;
+};
+
+export const getInsuranceBenefits = async () => {
+  const res = await API.get("/insurance-benefits");
+  return res.data.data;
+};

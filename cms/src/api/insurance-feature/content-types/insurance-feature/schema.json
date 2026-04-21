@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insurance_features",
+  "info": {
+    "singularName": "insurance-feature",
+    "pluralName": "insurance-features",
+    "displayName": "Insurance Features"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}
