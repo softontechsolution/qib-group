@@ -49,6 +49,7 @@ export default function InsurancePage() {
         {/* Hero Slider */}
         <section className="relative h-[85vh] overflow-hidden">
           {slides.map((slide, index) => {
+            console.log(slide);
             const imageUrl =
               slide.image?.url
                 ? `http://localhost:1337${slide.image.url}`
@@ -131,9 +132,9 @@ export default function InsurancePage() {
               <motion.div
                 key={policy.id}
                 whileHover={{ scale: 1.03 }}
-                className="p-8 border border-gray-700 rounded-2xl cursor-pointer"
+                className="p-8 border border-gray-700 text-center rounded-2xl cursor-pointer"
               >
-                <Shield className="w-10 h-10 text-yellow-500 mb-4" />
+                <Shield className="w-10 h-10 text-yellow-500 mb-4 mx-auto" />
 
                 <h3 className="text-xl font-bold">
                   {policy.title || policy.attributes?.title}
