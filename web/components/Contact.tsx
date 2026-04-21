@@ -7,6 +7,7 @@ export default function Contact() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: ""
   });
@@ -31,6 +32,7 @@ export default function Contact() {
     setForm({
       name: "",
       email: "",
+      phone: "",
       subject: "",
       message: ""
     });
@@ -61,6 +63,16 @@ export default function Contact() {
           value={form.email}
           onChange={handleChange}
           placeholder="Email Address"
+          className="w-full p-4 bg-gray-900 rounded-xl"
+          required
+        />
+
+        <input
+          name="phone"
+          type="phone"
+          value={form.phone}
+          onChange={handleChange}
+          placeholder="Phone Number"
           className="w-full p-4 bg-gray-900 rounded-xl"
           required
         />

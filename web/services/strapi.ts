@@ -25,3 +25,18 @@ export const submitContact = async (payload: any) => {
   });
   return res.data;
 };
+
+export const getNews = async () => {
+  const res = await API.get("/news?populate=*");
+  return res.data.data;
+};
+
+export const getAboutPage = async () => {
+  const res = await API.get("/about-page");
+  return res.data.data;
+};
+
+export const getTeamMembers = async () => {
+  const res = await API.get("/team-members?populate=*");
+  return res.data.data;
+};
