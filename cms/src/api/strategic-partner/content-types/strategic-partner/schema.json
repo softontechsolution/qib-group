@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "strategic_partners",
+  "info": {
+    "singularName": "strategic-partner",
+    "pluralName": "strategic-partners",
+    "displayName": "Strategic Partners"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

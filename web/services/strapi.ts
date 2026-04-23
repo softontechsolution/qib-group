@@ -80,3 +80,18 @@ export const getLoginSlides = async () => {
   const res = await API.get("/login-slides?populate=*");
   return res.data.data;
 };
+
+export const getAboutSlides = async () => {
+  const res = await API.get("/about-slides?populate=*");
+  return res.data.data;
+};
+
+export const getStrategicPartners = async () => {
+  const res = await API.get("/strategic-partners?populate=*");
+  return res.data.data;
+};
+
+export const getCEOProfile = async () => {
+  const res = await API.get("/ceo-profile?populate=*");
+  return res.data.data;
+};

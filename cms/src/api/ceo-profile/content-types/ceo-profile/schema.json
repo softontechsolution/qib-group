@@ -1,0 +1,34 @@
+{
+  "kind": "singleType",
+  "collectionName": "ceo_profiles",
+  "info": {
+    "singularName": "ceo-profile",
+    "pluralName": "ceo-profiles",
+    "displayName": "CEO Profile"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "text"
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}
