@@ -717,6 +717,67 @@ export interface ApiInsuranceSlideInsuranceSlide
   };
 }
 
+export interface ApiLoginPageLoginPage extends Struct.SingleTypeSchema {
+  collectionName: 'login_pages';
+  info: {
+    displayName: 'Login Page';
+    pluralName: 'login-pages';
+    singularName: 'login-page';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::login-page.login-page'
+    > &
+      Schema.Attribute.Private;
+    logo: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    pageTitle: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    signupText: Schema.Attribute.String;
+    subtitle: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiLoginSlideLoginSlide extends Struct.CollectionTypeSchema {
+  collectionName: 'login_slides';
+  info: {
+    displayName: 'Login Slides';
+    pluralName: 'login-slides';
+    singularName: 'login-slide';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::login-slide.login-slide'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiNewNew extends Struct.CollectionTypeSchema {
   collectionName: 'news';
   info: {
@@ -1364,6 +1425,8 @@ declare module '@strapi/strapi' {
       'api::insurance-page.insurance-page': ApiInsurancePageInsurancePage;
       'api::insurance-policie.insurance-policie': ApiInsurancePolicieInsurancePolicie;
       'api::insurance-slide.insurance-slide': ApiInsuranceSlideInsuranceSlide;
+      'api::login-page.login-page': ApiLoginPageLoginPage;
+      'api::login-slide.login-slide': ApiLoginSlideLoginSlide;
       'api::new.new': ApiNewNew;
       'api::project.project': ApiProjectProject;
       'api::team-member.team-member': ApiTeamMemberTeamMember;

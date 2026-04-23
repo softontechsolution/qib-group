@@ -70,3 +70,13 @@ export const getInsuranceBenefits = async () => {
   const res = await API.get("/insurance-benefits");
   return res.data.data;
 };
+
+export const getLoginPage = async () => {
+  const res = await API.get("/login-page?populate=*");
+  return res.data.data;
+};
+
+export const getLoginSlides = async () => {
+  const res = await API.get("/login-slides?populate=*");
+  return res.data.data;
+};

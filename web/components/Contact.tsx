@@ -98,7 +98,7 @@ export default function Contact() {
 
         <button
           type="submit"
-          className="px-8 py-4 bg-yellow-500 text-black rounded-xl"
+          className="px-8 py-4 bg-[#0096c7] text-white rounded-xl"
         >
           Send Message
         </button>

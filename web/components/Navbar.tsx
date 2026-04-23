@@ -19,9 +19,9 @@ export default function Navbar({ showLogin = false }) {
       {showLogin && (
         <Link
           href="/login"
-          className="px-6 py-2 bg-yellow-500 text-black rounded-xl"
+          className="px-6 py-2 bg-[#0096c7] text-white rounded-xl"
         >
-          Login
+          Login into your account
         </Link>
       )}
     </nav>

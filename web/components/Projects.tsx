@@ -32,7 +32,7 @@ export default function Projects() {
               {project.description || project.attributes?.description}
             </p>
 
-            <p className="mt-2 text-yellow-500">
+            <p className="mt-2 text-[#0096c7]">
               {project.location || project.attributes?.location}
             </p>
           </motion.div>

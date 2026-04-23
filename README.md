@@ -10,3 +10,6 @@ To run the program (Website)
 To run the program (CMS)
 >>cd cms
 >>npm run develop
+
+STRUCTURE
+>> Each page will follow the

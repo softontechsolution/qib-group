@@ -32,7 +32,7 @@ export default function News() {
               {article.excerpt || article.attributes?.excerpt}
             </p>
 
-            <p className="mt-3 text-yellow-500">
+            <p className="mt-3 text-[#0096c7]">
               {article.publishedAt || article.attributes?.publishedAt}
             </p>
           </motion.div>

@@ -16,7 +16,7 @@ export default function Hero() {
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden bg-black text-white">
 
-      <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-yellow-500 opacity-20 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-[#0096c7] opacity-20 blur-3xl rounded-full -translate-x-1/2 -translate-y-1/2" />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -33,7 +33,7 @@ export default function Hero() {
 
         <motion.button
           whileHover={{ scale: 1.05 }}
-          className="mt-8 px-8 py-4 bg-yellow-500 text-black rounded-xl"
+          className="mt-8 px-8 py-4 bg-[#0096c7] text-white rounded-xl"
         >
           {data.heroButton}
         </motion.button>
