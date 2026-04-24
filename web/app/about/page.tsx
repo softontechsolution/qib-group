@@ -9,6 +9,7 @@ import {
   getAboutSlides,
   getStrategicPartners,
   getCEOProfile,
+  getAboutGallery,
 } from "@/services/strapi";
 
 export default function AboutPage() {
@@ -17,7 +18,15 @@ export default function AboutPage() {
   const [slides, setSlides] = useState<any[]>([]);
   const [partners, setPartners] = useState<any[]>([]);
   const [ceo, setCeo] = useState<any>(null);
+  const [gallery, setGallery] = useState<any[]>([]);
   const [current, setCurrent] = useState(0);
+  const [expandedPartner, setExpandedPartner] = useState<number | null>(null);
+
+  const truncateText = (text: string, words = 70) => {
+  const split = text.split(" ");
+  if (split.length <= words) return text;
+  return split.slice(0, words).join(" ") + "...";
+};
 
   useEffect(() => {
     getAboutPage().then(setAbout);
@@ -25,6 +34,7 @@ export default function AboutPage() {
     getAboutSlides().then(setSlides);
     getStrategicPartners().then(setPartners);
     getCEOProfile().then(setCeo);
+    getAboutGallery().then(setGallery);
   }, []);
 
   useEffect(() => {
@@ -78,6 +88,9 @@ export default function AboutPage() {
                       <p className="mt-6 max-w-3xl mx-auto text-gray-300">
                         {slide.description || slide.attributes?.description}
                       </p>
+                      <button className="mt-10 px-8 py-4 bg-[#0096c7] text-white rounded-xl">
+                        Contact Us
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -117,7 +130,7 @@ export default function AboutPage() {
               />
 
               <div>
-
+                <h2 className="text-4xl font-bold">Alhaji Umar Bida</h2>
                 <h3 className="mt-4 text-2xl text-[#0096c7]">
                   {ceo.name || ceo.attributes?.name}
                 </h3>
@@ -191,10 +204,41 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* IMAGE GALLERY */}
+          {gallery.length > 0 && (
+            <section className="py-20 overflow-hidden bg-black">
+              <h2 className="text-4xl font-bold text-center mb-12">
+                Our Partners
+              </h2>
+
+              <div className="relative">
+                <div className="flex gap-6 animate-marquee w-max">
+                  {[...gallery, ...gallery].map((item, index) => {
+                    const imageUrl =
+                      item.image?.url
+                        ? `http://localhost:1337${item.image.url}`
+                        : item.attributes?.image?.data?.attributes?.url
+                        ? `http://localhost:1337${item.attributes.image.data.attributes.url}`
+                        : "";
+
+                    return (
+                      <img
+                        key={index}
+                        src={imageUrl}
+                        alt="Gallery"
+                        className="w-80 h-26 object-fit rounded-2xl flex-shrink-0"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
+
         {/* STRATEGIC PARTNERS */}
         <section className="px-8 md:px-20 py-20">
           <h2 className="text-4xl font-bold text-center">
-            Strategic Partners
+            Strategy & History
           </h2>
 
           <div className="grid md:grid-cols-2 gap-12 mt-12">
@@ -222,9 +266,31 @@ export default function AboutPage() {
                       {partner.title || partner.attributes?.title}
                     </h3>
 
-                    <p className="mt-4 text-gray-400">
-                      {partner.description || partner.attributes?.description}
-                    </p>
+                    {(() => {
+                      const fullText =
+                        partner.description || partner.attributes?.description || "";
+
+                      const isExpanded = expandedPartner === partner.id;
+
+                      return (
+                        <>
+                          <p className="mt-4 text-gray-400">
+                            {isExpanded ? fullText : truncateText(fullText, 70)}
+                          </p>
+
+                          {fullText.split(" ").length > 70 && (
+                            <button
+                              onClick={() =>
+                                setExpandedPartner(isExpanded ? null : partner.id)
+                              }
+                              className="mt-4 text-[#0096c7] font-medium hover:underline"
+                            >
+                              {isExpanded ? "Read Less" : "Read More"}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               );

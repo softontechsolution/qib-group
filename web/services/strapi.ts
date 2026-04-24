@@ -95,3 +95,8 @@ export const getCEOProfile = async () => {
   const res = await API.get("/ceo-profile?populate=*");
   return res.data.data;
 };
+
+export const getAboutGallery = async () => {
+  const res = await API.get("/about-galleries?populate=*");
+  return res.data.data;
+};
