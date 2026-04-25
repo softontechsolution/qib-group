@@ -12,6 +12,7 @@ export default function Navbar({ showLogin = false }) {
   const pathname = usePathname();
 
   const links = [
+    { name: "About Us", href: "/about-us" },
     { name: "Insurance", href: "/insurance" },
     { name: "ICT", href: "/ict" },
     { name: "Construction", href: "/construction" },
