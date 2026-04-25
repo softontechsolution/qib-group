@@ -5,13 +5,15 @@ import { motion } from "framer-motion";
 import { getHomepage } from "@/services/strapi";
 
 export default function Hero() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<any>({
+    heroTitle: "Innovating the Future of Africa",
+    heroSubtitle: "QIB Group is a diversified conglomerate driving sustainable growth across multiple industries.",
+    heroButton: "Explore Our Division"
+  });
 
   useEffect(() => {
-    getHomepage().then(setData);
+    getHomepage().then(res => res && setData(res));
   }, []);
-
-  if (!data) return null;
 
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden bg-black text-white">

@@ -12,18 +12,33 @@ export default function Business() {
   }, []);
 
   return (
-    <section id="businesses" className="p-20 bg-black text-white">
-      <h2 className="text-4xl text-center font-bold">Our Businesses</h2>
+    <section id="businesses" className="py-32 px-6 max-w-7xl mx-auto bg-black text-white">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold">Our Businesses</h2>
+        <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mt-4 rounded-full"></div>
+      </motion.div>
 
       <div className="grid md:grid-cols-3 gap-8 mt-10">
-        {businesses.map((item) => (
+        {businesses.map((item, index) => (
           <motion.div
             key={item.id}
-            whileHover={{ scale: 1.05 }}
-            className="p-8 border border-gray-700 rounded-2xl bg-gray-900/50 backdrop-blur-sm transition-colors hover:border-yellow-500/50"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1, duration: 0.6 }}
+            whileHover={{ y: -10, scale: 1.02 }}
+            className="p-8 border border-white/5 rounded-3xl bg-gray-900/30 backdrop-blur-md shadow-xl hover:border-[#0096c7]/30 transition-all duration-300"
           >
-            <h3 className="text-xl font-bold text-white">{item.name}</h3>
-            <p className="mt-3 text-gray-400">{item.description}</p>
+            <div className="w-12 h-12 bg-[#0096c7]/20 rounded-2xl flex items-center justify-center mb-6">
+              <span className="text-[#0096c7] font-bold">{index + 1}</span>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">{item.name}</h3>
+            <p className="text-gray-400 leading-relaxed">{item.description}</p>
           </motion.div>
         ))}
       </div>

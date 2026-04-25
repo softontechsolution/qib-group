@@ -12,29 +12,39 @@ export default function News() {
   }, []);
 
   return (
-    <section className="p-20 bg-gray-950 text-white">
-      <h2 className="text-4xl text-center font-bold">
-        Latest News
-      </h2>
+    <section className="py-32 px-6 max-w-7xl mx-auto bg-black text-white">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold">Latest News</h2>
+        <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mt-4 rounded-full"></div>
+      </motion.div>
 
       <div className="grid md:grid-cols-3 gap-8 mt-10">
-        {articles.map((article) => (
+        {articles.map((article, index) => (
           <motion.div
             key={article.id}
-            whileHover={{ scale: 1.03 }}
-            className="border border-gray-700 rounded-2xl p-6"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.1, duration: 0.6 }}
+            whileHover={{ y: -10 }}
+            className="group p-8 border border-white/5 rounded-3xl bg-gray-900/40 backdrop-blur-sm hover:border-[#0096c7]/30 transition-all duration-300"
           >
-            <h3 className="text-2xl font-bold">
+            <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-[#0096c7] transition-colors">
               {article.title || article.attributes?.title}
             </h3>
 
-            <p className="mt-4 text-gray-400">
+            <p className="text-gray-400 leading-relaxed mb-6">
               {article.excerpt || article.attributes?.excerpt}
             </p>
 
-            <p className="mt-3 text-[#0096c7]">
+            <div className="text-[#0096c7] text-sm font-semibold tracking-wider uppercase">
               {article.publishedAt || article.attributes?.publishedAt}
-            </p>
+            </div>
           </motion.div>
         ))}
       </div>

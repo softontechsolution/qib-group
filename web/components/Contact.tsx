@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { submitContact } from "@/services/strapi";
 
 export default function Contact() {
@@ -46,99 +47,120 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="p-20 bg-black text-white">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl text-center font-bold mb-4">
-          Contact Us
-        </h2>
-        <p className="text-center text-gray-400 mb-12">
-          Have a question or want to work together? Send us a message.
-        </p>
+    <section id="contact" className="py-32 px-6 bg-black text-white overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="max-w-4xl mx-auto"
+      >
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Contact Us
+          </h2>
+          <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Have a question or want to work together? Send us a message.
+          </p>
+        </div>
 
-        <form
+        <motion.form
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
           onSubmit={handleSubmit}
-          className="bg-gray-950 p-8 md:p-12 rounded-3xl border border-gray-800 space-y-6 shadow-2xl"
+          className="bg-gray-900/10 backdrop-blur-md p-8 md:p-12 rounded-[2.5rem] border border-white/5 space-y-8 shadow-2xl relative z-10"
         >
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm text-gray-500 ml-1">Full Name</label>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Full Name</label>
               <input
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full p-4 bg-black border border-gray-800 rounded-xl focus:border-[#0096c7] focus:outline-none transition-colors"
+                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm text-gray-500 ml-1">Email Address</label>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Email Address</label>
               <input
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
                 placeholder="john@example.com"
-                className="w-full p-4 bg-black border border-gray-800 rounded-xl focus:border-[#0096c7] focus:outline-none transition-colors"
+                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
                 required
               />
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm text-gray-500 ml-1">Phone Number</label>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Phone Number</label>
               <input
                 name="phone"
                 type="tel"
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="+234..."
-                className="w-full p-4 bg-black border border-gray-800 rounded-xl focus:border-[#0096c7] focus:outline-none transition-colors"
+                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm text-gray-500 ml-1">Subject</label>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Subject</label>
               <input
                 name="subject"
                 value={form.subject}
                 onChange={handleChange}
                 placeholder="Inquiry"
-                className="w-full p-4 bg-black border border-gray-800 rounded-xl focus:border-[#0096c7] focus:outline-none transition-colors"
+                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm text-gray-500 ml-1">Message</label>
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Message</label>
             <textarea
               name="message"
               value={form.message}
               onChange={handleChange}
               placeholder="Your Message..."
-              rows={5}
-              className="w-full p-4 bg-black border border-gray-800 rounded-xl focus:border-[#0096c7] focus:outline-none transition-colors resize-none"
+              rows={6}
+              className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all resize-none"
               required
             />
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-[#0096c7] text-white font-bold rounded-xl hover:bg-white hover:text-black transition-all transform active:scale-95 disabled:opacity-50"
+            className="w-full py-5 bg-[#0096c7] text-white font-bold rounded-2xl hover:shadow-[0_0_30px_-5px_#0096c7] transition-all disabled:opacity-50 text-lg uppercase tracking-widest"
           >
             {loading ? "Sending..." : "Send Message"}
-          </button>
+          </motion.button>
 
           {success && (
-            <p className="text-center text-green-400 font-medium animate-pulse">{success}</p>
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-green-400 font-bold bg-green-400/10 py-4 rounded-xl border border-green-400/20"
+            >
+              {success}
+            </motion.p>
           )}
-        </form>
-      </div>
+        </motion.form>
+      </motion.div>
     </section>
   );
-}
+}
