@@ -61,16 +61,22 @@ export default function Navbar({ showLogin = false }) {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
           {showLogin && (
-            <Link
-              href="/login"
-              className="px-6 py-2 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#0096c7] transition-colors"
-            >
-              Login
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="px-5 py-2 border border-[#0096c7] text-[#0096c7] rounded-xl hover:bg-[#0096c7] hover:text-white transition"
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/buy-insurance"
+                className="px-5 py-2 bg-[#0096c7] text-white rounded-xl hover:scale-105 transition"
+              >
+                Buy Insurance
+              </Link>
+            </>
           )}
-          <button className="px-5 py-2 bg-[#0096c7] text-white text-sm font-bold rounded-full hover:bg-white hover:text-black transition-colors">
-            Get Started
-          </button>
         </div>
 
         {/* Mobile Menu Button */}
@@ -105,17 +111,24 @@ export default function Navbar({ showLogin = false }) {
           ))}
 
           {showLogin && (
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="block text-center py-4 bg-white text-black font-bold rounded-xl"
-            >
-              Login into your account
-            </Link>
+            <div className="space-y-3">
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="block text-center py-3 border border-[#0096c7] text-[#0096c7] rounded-xl"
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/buy-insurance"
+                onClick={() => setMobileOpen(false)}
+                className="block text-center py-3 bg-[#0096c7] rounded-xl"
+              >
+                Buy Motor Vehicle Insurance
+              </Link>
+            </div>
           )}
-          <button className="w-full py-4 bg-[#0096c7] text-white font-bold rounded-xl">
-            Get Started
-          </button>
         </motion.div>
       )}
     </header>

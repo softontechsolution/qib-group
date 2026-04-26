@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -113,9 +114,17 @@ export default function InsurancePage() {
                     <h1 className="text-5xl md:text-7xl font-bold">
                       {slide.title || slide.attributes?.title}
                     </h1>
-                    <p className="mt-6 max-w-2xl text-gray-300">
+
+                    <p className="mt-6 max-w-2xl text-gray-300 mx-auto">
                       {slide.description || slide.attributes?.description}
                     </p>
+
+                    <Link
+                      href="/buy-insurance"
+                      className="inline-block mt-10 px-8 py-4 bg-[#0096c7] text-white rounded-2xl font-semibold hover:scale-105 transition"
+                    >
+                      Buy Motor Vehicle Insurance
+                    </Link>
                   </div>
                 </div>
               </div>
