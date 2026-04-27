@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 import TeamSection from "@/components/TeamSection";
+import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 
 export default function ICTPage() {
@@ -120,6 +121,8 @@ export default function ICTPage() {
 
         <TeamSection />
       </section>
+
+      <Footer />
     </main>
   );
 }

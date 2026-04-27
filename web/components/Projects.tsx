@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { getProjects } from "@/services/strapi";
+import Link from "next/link";
 
 export default function Projects() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -49,6 +50,33 @@ export default function Projects() {
           </motion.div>
         ))}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="text-center mt-14"
+      >
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-2 px-8 py-4 border border-[#0096c7]/30 text-[#0096c7] rounded-2xl font-medium hover:bg-[#0096c7] hover:text-white hover:scale-105 transition-all duration-300 group"
+        >
+          See All Projects
+          <svg
+            className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </Link>
+      </motion.div>
     </section>
   );
 }

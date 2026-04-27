@@ -30,12 +30,12 @@ export default function AboutPage() {
 };
 
   useEffect(() => {
-    getAboutPage().then(setAbout);
-    getTeamMembers().then(setTeam);
-    getAboutSlides().then(setSlides);
-    getStrategicPartners().then(setPartners);
-    getCEOProfile().then(setCeo);
-    getAboutGallery().then(setGallery);
+    getAboutPage().then(setAbout).catch(() => setAbout({}));
+    getTeamMembers().then(setTeam).catch(() => setTeam([]));
+    getAboutSlides().then(setSlides).catch(() => setSlides([]));
+    getStrategicPartners().then(setPartners).catch(() => setPartners([]));
+    getCEOProfile().then(setCeo).catch(() => setCeo(null));
+    getAboutGallery().then(setGallery).catch(() => setGallery([]));
   }, []);
 
   useEffect(() => {

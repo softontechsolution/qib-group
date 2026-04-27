@@ -43,7 +43,7 @@ export default function Navbar({ showLogin = false }) {
               <Link
                 key={link.href}
                 href={link.href}
-                  className="relative py-1 text-sm font-medium transition-colors hover:text-[#0096c7]"
+                className="relative py-1 text-sm font-medium transition-colors hover:text-[#0096c7]"
               >
                 {link.name}
                 {isActive && (
@@ -90,7 +90,7 @@ export default function Navbar({ showLogin = false }) {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden bg-black/95 backdrop-blur-xl border-t border-white/5 px-6 py-8 space-y-6"
@@ -100,11 +100,10 @@ export default function Navbar({ showLogin = false }) {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className={`block text-lg font-medium ${
-                pathname === link.href
+              className={`block text-lg font-medium ${pathname === link.href
                   ? "text-[#0096c7]"
                   : "text-white"
-              }`}
+                }`}
             >
               {link.name}
             </Link>
