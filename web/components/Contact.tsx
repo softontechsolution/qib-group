@@ -10,7 +10,7 @@ export default function Contact() {
     email: "",
     phone: "",
     subject: "",
-    message: ""
+    message: "",
   });
 
   const [success, setSuccess] = useState("");
@@ -21,7 +21,7 @@ export default function Contact() {
   ) => {
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -37,7 +37,7 @@ export default function Contact() {
         email: "",
         phone: "",
         subject: "",
-        message: ""
+        message: "",
       });
     } catch (error) {
       console.error("Submission error:", error);
@@ -47,7 +47,7 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="py-32 px-6 bg-black text-white overflow-hidden">
+    <section id="contact" className="py-24 px-6 bg-white text-black">
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -55,92 +55,144 @@ export default function Contact() {
         transition={{ duration: 0.8 }}
         className="max-w-4xl mx-auto"
       >
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Contact Us
-          </h2>
-          <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Have a question or want to work together? Send us a message.
-          </p>
-        </div>
+            <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Contact Us
+            </h2>
+            <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                Have a question or want to work together? Send us a message.
+            </p>
+            </div>
+        </motion.div>
+      <div className="max-w-7xl mx-auto space-y-16">
+        {/* TOP TWO COLUMNS */}
+        <div className="grid md:grid-cols-2 gap-16 items-start">
+          {/* LEFT COLUMN */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="space-y-8"
+          >
+            <div>
+              <h2 className="text-2xl md:text-3xl font-bold leading-tight">
+                Let's build the future together
+              </h2>
 
-        <motion.form
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-          onSubmit={handleSubmit}
-          className="bg-gray-900/10 backdrop-blur-md p-8 md:p-12 rounded-[2.5rem] border border-white/5 space-y-8 shadow-2xl relative z-10"
-        >
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Full Name</label>
+              <p className="mt-6 text-lg text-gray-600 leading-relaxed">
+                Whether you have a question about our services, or want to
+                discuss a potential project, our team is ready to help.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#0096c7]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#0096c7]/20">
+                    <span className="text-[#0096c7]">📍</span>
+                </div>
+                <div>
+                  <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
+                    Office Address
+                  </p>
+                  <p className="mt-2 text-gray-700">
+                    Plot 24, Central Business District, Abuja, Nigeria
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#0096c7]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#0096c7]/20">
+                  <span className="text-[#0096c7]">📧</span>
+                </div>
+                <div>
+                  <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
+                    Official Email
+                  </p>
+                  <p className="mt-2 text-gray-700">
+                    info@qibgroup.com
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-[#0096c7]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#0096c7]/20">
+                  <span className="text-[#0096c7]">📞</span>
+                </div>
+                <div>
+                  <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
+                    Phone Number
+                  </p>
+                  <p className="mt-2 text-gray-700">
+                    +234 800 000 0000
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* RIGHT COLUMN */}
+          <motion.form
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            onSubmit={handleSubmit}
+            className="bg-gray-50 p-8 md:p-10 rounded-[2rem] border border-gray-200 space-y-8 shadow-lg"
+          >
+            <div className="grid md:grid-cols-2 gap-6">
               <input
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                placeholder="John Doe"
-                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                placeholder="Full Name"
+                className="w-full p-4 bg-white border border-gray-300 rounded-2xl focus:border-[#0096c7] outline-none"
                 required
               />
-            </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Email Address</label>
               <input
                 name="email"
                 type="email"
                 value={form.email}
                 onChange={handleChange}
-                placeholder="john@example.com"
-                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                placeholder="Email Address"
+                className="w-full p-4 bg-white border border-gray-300 rounded-2xl focus:border-[#0096c7] outline-none"
                 required
               />
             </div>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Phone Number</label>
+            <div className="grid md:grid-cols-2 gap-6">
               <input
                 name="phone"
-                type="tel"
                 value={form.phone}
                 onChange={handleChange}
-                placeholder="+234..."
-                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                placeholder="Phone Number"
+                className="w-full p-4 bg-white border border-gray-300 rounded-2xl focus:border-[#0096c7] outline-none"
                 required
               />
-            </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Subject</label>
               <input
                 name="subject"
                 value={form.subject}
                 onChange={handleChange}
-                placeholder="Inquiry"
-                className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                placeholder="Subject"
+                className="w-full p-4 bg-white border border-gray-300 rounded-2xl focus:border-[#0096c7] outline-none"
                 required
               />
             </div>
-          </div>
 
-          <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-400 ml-2 uppercase tracking-wider">Message</label>
             <textarea
               name="message"
               value={form.message}
               onChange={handleChange}
               placeholder="Your Message..."
               rows={6}
-              className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all resize-none"
+              className="w-full p-4 bg-white border border-gray-300 rounded-2xl focus:border-[#0096c7] outline-none resize-none"
               required
             />
-          </div>
 
-          <motion.button
+            <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
@@ -159,8 +211,27 @@ export default function Contact() {
               {success}
             </motion.p>
           )}
-        </motion.form>
-      </motion.div>
+          </motion.form>
+        </div>
+        {/* FULL WIDTH GOOGLE MAP */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg mt-6"
+          >
+            <iframe
+              src="https://www.google.com/maps?q=Abuja,Nigeria&output=embed"
+              width="100%"
+              height="350"
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full"
+            ></iframe>
+          </motion.div>
+      </div>
     </section>
   );
-}
+}

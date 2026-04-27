@@ -100,3 +100,8 @@ export const getAboutGallery = async () => {
   const res = await API.get("/about-galleries?populate=*");
   return res.data.data;
 };
+
+export const getHeroSlides = async () => {
+  const res = await API.get("/hero-slides?populate=*");
+  return res.data.data;
+};

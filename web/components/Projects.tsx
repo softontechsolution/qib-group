@@ -12,7 +12,7 @@ export default function Projects() {
   }, []);
 
   return (
-    <section className="py-32 px-6 max-w-7xl mx-auto bg-black text-white">
+    <section className="py-32 px-10 w-full mx-auto bg-gray-100 text-black">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -32,13 +32,13 @@ export default function Projects() {
             viewport={{ once: true }}
             transition={{ delay: index * 0.15, duration: 0.6 }}
             whileHover={{ scale: 1.02 }}
-            className="p-10 border border-white/5 rounded-[2rem] bg-gray-900/20 backdrop-blur-md hover:border-[#0096c7]/40 transition-all duration-300"
+            className="p-10 border border-white/5 rounded-[2rem] bg-[#0096c7]/15 backdrop-blur-md hover:border-[#0096c7]/40 transition-all duration-300"
           >
-            <h3 className="text-3xl font-bold text-white mb-6">
+            <h3 className="text-3xl font-bold text-[#0096c7] mb-6">
               {project.title || project.attributes?.title}
             </h3>
 
-            <p className="text-gray-400 text-lg leading-relaxed mb-8">
+            <p className="text-gray-800 text-lg leading-relaxed mb-8">
               {project.description || project.attributes?.description}
             </p>
 

@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import PageHeader from "@/components/PageHeader";
 
@@ -101,6 +102,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      <Footer/>
     </main>
   );
 }

@@ -123,7 +123,7 @@ export default function InsurancePage() {
                       href="/buy-insurance"
                       className="inline-block mt-10 px-8 py-4 bg-[#0096c7] text-white rounded-2xl font-semibold hover:scale-105 transition"
                     >
-                      Buy Motor Vehicle Insurance
+                      CLICK HERE TO GET STARTED
                     </Link>
                   </div>
                 </div>

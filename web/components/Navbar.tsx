@@ -22,7 +22,7 @@ export default function Navbar({ showLogin = false }) {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-black/40 backdrop-blur-xl text-white border-b border-white/5">
+    <header className="fixed top-0 left-0 w-full z-50 backdrop-blur-xl  bg-white text-[#0096c7] border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center group">
@@ -81,7 +81,7 @@ export default function Navbar({ showLogin = false }) {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 text-white"
+          className="md:hidden p-2 text-black"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           {mobileOpen ? <X size={28} /> : <Menu size={28} />}
@@ -123,7 +123,7 @@ export default function Navbar({ showLogin = false }) {
               <Link
                 href="/buy-insurance"
                 onClick={() => setMobileOpen(false)}
-                className="block text-center py-3 bg-[#0096c7] rounded-xl"
+                className="block text-center py-3 bg-[#0096c7] text-white rounded-xl"
               >
                 Buy Motor Vehicle Insurance
               </Link>

@@ -1,0 +1,173 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { submitContact } from "@/services/strapi";
+
+export default function Contact() {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: ""
+  });
+
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await submitContact(form);
+      setSuccess("Your message has been sent successfully.");
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        message: ""
+      });
+    } catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section id="contact" className="py-32 px-6 bg-gray-100 text-black overflow-hidden">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="max-w-4xl mx-auto"
+      >
+            <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Contact Us
+            </h2>
+            <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
+            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                Have a question or want to work together? Send us a message.
+            </p>
+            </div>
+        </motion.div>
+
+
+        <motion.form
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          onSubmit={handleSubmit}
+          className="bg-[#0096c7]/15 backdrop-blur-md p-8 md:p-12 rounded-[2.5rem] border border-white/5 space-y-8 shadow-2xl relative z-10"
+        >
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-700 ml-2 uppercase tracking-wider">Full Name</label>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="John Doe"
+                className="w-full p-5 bg-gray-100 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-700 ml-2 uppercase tracking-wider">Email Address</label>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                className="w-full p-5 bg-gray-100 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-700 ml-2 uppercase tracking-wider">Phone Number</label>
+              <input
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="+234..."
+                className="w-full p-5 bg-gray-100 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                required
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-gray-700 ml-2 uppercase tracking-wider">Subject</label>
+              <input
+                name="subject"
+                value={form.subject}
+                onChange={handleChange}
+                placeholder="Inquiry"
+                className="w-full p-5 bg-gray-100 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-gray-700 ml-2 uppercase tracking-wider">Message</label>
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Your Message..."
+              rows={6}
+              className="w-full p-5 bg-gray-100 border border-white/10 rounded-2xl focus:border-[#0096c7] focus:bg-white/10 focus:outline-none transition-all resize-none"
+              required
+            />
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            disabled={loading}
+            className="w-full py-5 bg-[#0096c7] text-white font-bold rounded-2xl hover:shadow-[0_0_30px_-5px_#0096c7] transition-all disabled:opacity-50 text-lg uppercase tracking-widest"
+          >
+            {loading ? "Sending..." : "Send Message"}
+          </motion.button>
+
+          {success && (
+            <motion.p 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center text-green-400 font-bold bg-green-400/10 py-4 rounded-xl border border-green-400/20"
+            >
+              {success}
+            </motion.p>
+          )}
+        </motion.form>
+      </motion.div>
+    </section>
+  );
+}
+
+
+Building Africa’s Future
+Technology • Insurance • Innovation
+QIB Group is a diversified enterprise transforming Africa through technology, insurance and innovation.

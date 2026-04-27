@@ -1,29 +1,29 @@
 {
-  "kind": "singleType",
-  "collectionName": "homepages",
+  "kind": "collectionType",
+  "collectionName": "hero_slides",
   "info": {
-    "singularName": "homepage",
-    "pluralName": "homepages",
-    "displayName": "Homepage"
+    "singularName": "hero-slide",
+    "pluralName": "hero-slides",
+    "displayName": "Hero Slides"
   },
   "options": {
     "draftAndPublish": true
   },
   "pluginOptions": {},
   "attributes": {
-    "heroTitle": {
+    "title": {
       "type": "string"
     },
-    "heroSubtitle": {
+    "subtitle": {
       "type": "text"
     },
-    "heroButton": {
+    "buttonText": {
       "type": "string"
     },
-    "aboutText": {
-      "type": "text"
+    "buttonLink": {
+      "type": "string"
     },
-    "heroImage": {
+    "image": {
       "type": "media",
       "multiple": false,
       "allowedTypes": [
