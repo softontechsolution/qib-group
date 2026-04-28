@@ -105,3 +105,31 @@ export const getHeroSlides = async () => {
   const res = await API.get("/hero-slides?populate=*");
   return res.data.data;
 };
+
+export async function submitMotorInsurance(data: any) {
+  const cleanData = {
+    ...data,
+    issueDate: data.issueDate ? data.issueDate : null,
+    companyIssueDate: data.companyIssueDate ? data.companyIssueDate : null,
+  };
+
+  const res = await fetch(
+    "http://localhost:1337/api/motor-insurance-registrations",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ data: cleanData }),
+    }
+  );
+
+  const result = await res.json();
+
+  if (!res.ok) {
+    console.error("Strapi error:", result);
+    throw new Error(result?.error?.message || "Failed to submit registration");
+  }
+
+  return result;
+}
