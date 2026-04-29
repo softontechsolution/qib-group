@@ -897,6 +897,72 @@ export interface ApiLoginSlideLoginSlide extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'motor_insurance_registrations';
+  info: {
+    displayName: 'motor-insurance-registrations';
+    pluralName: 'motor-insurance-registrations';
+    singularName: 'motor-insurance-registration';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    address: Schema.Attribute.Text;
+    chassisNumber: Schema.Attribute.String;
+    classOfInsurance: Schema.Attribute.String;
+    companyAddress: Schema.Attribute.Text;
+    companyEmail: Schema.Attribute.Email;
+    companyIssueDate: Schema.Attribute.Date;
+    companyName: Schema.Attribute.String;
+    companyPhone: Schema.Attribute.String;
+    companyPolicyHolderName: Schema.Attribute.String;
+    coverType: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email;
+    engineCapacity: Schema.Attribute.String;
+    engineNumber: Schema.Attribute.String;
+    firstName: Schema.Attribute.String;
+    issueDate: Schema.Attribute.Date;
+    lastName: Schema.Attribute.String;
+    lga: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::motor-insurance-registration.motor-insurance-registration'
+    > &
+      Schema.Attribute.Private;
+    mobileNumber: Schema.Attribute.String;
+    nin: Schema.Attribute.String;
+    plateFirst: Schema.Attribute.String;
+    plateLast: Schema.Attribute.String;
+    plateMiddle: Schema.Attribute.String;
+    policyAddress: Schema.Attribute.Text;
+    policyCompanyName: Schema.Attribute.String;
+    policyEmail: Schema.Attribute.Email;
+    policyHolderFirstName: Schema.Attribute.String;
+    policyHolderLastName: Schema.Attribute.String;
+    policyHolderMiddleName: Schema.Attribute.String;
+    policyPhone: Schema.Attribute.String;
+    policyType: Schema.Attribute.String;
+    preferredInsurer: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    state: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    vehicleColor: Schema.Attribute.String;
+    vehicleLga: Schema.Attribute.String;
+    vehicleMake: Schema.Attribute.String;
+    vehicleModel: Schema.Attribute.String;
+    vehicleState: Schema.Attribute.String;
+    vehicleUse: Schema.Attribute.String;
+  };
+}
+
 export interface ApiNewNew extends Struct.CollectionTypeSchema {
   collectionName: 'news';
   info: {
@@ -1581,6 +1647,7 @@ declare module '@strapi/strapi' {
       'api::insurance-slide.insurance-slide': ApiInsuranceSlideInsuranceSlide;
       'api::login-page.login-page': ApiLoginPageLoginPage;
       'api::login-slide.login-slide': ApiLoginSlideLoginSlide;
+      'api::motor-insurance-registration.motor-insurance-registration': ApiMotorInsuranceRegistrationMotorInsuranceRegistration;
       'api::new.new': ApiNewNew;
       'api::project.project': ApiProjectProject;
       'api::strategic-partner.strategic-partner': ApiStrategicPartnerStrategicPartner;

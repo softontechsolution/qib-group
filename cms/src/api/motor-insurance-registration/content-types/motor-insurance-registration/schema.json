@@ -1,0 +1,129 @@
+{
+  "kind": "collectionType",
+  "collectionName": "motor_insurance_registrations",
+  "info": {
+    "singularName": "motor-insurance-registration",
+    "pluralName": "motor-insurance-registrations",
+    "displayName": "motor-insurance-registrations"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "classOfInsurance": {
+      "type": "string"
+    },
+    "coverType": {
+      "type": "string"
+    },
+    "vehicleUse": {
+      "type": "string"
+    },
+    "preferredInsurer": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "mobileNumber": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "state": {
+      "type": "string"
+    },
+    "lga": {
+      "type": "string"
+    },
+    "address": {
+      "type": "text"
+    },
+    "vehicleState": {
+      "type": "string"
+    },
+    "vehicleLga": {
+      "type": "string"
+    },
+    "plateFirst": {
+      "type": "string"
+    },
+    "plateMiddle": {
+      "type": "string"
+    },
+    "plateLast": {
+      "type": "string"
+    },
+    "chassisNumber": {
+      "type": "string"
+    },
+    "engineNumber": {
+      "type": "string"
+    },
+    "vehicleColor": {
+      "type": "string"
+    },
+    "vehicleMake": {
+      "type": "string"
+    },
+    "vehicleModel": {
+      "type": "string"
+    },
+    "engineCapacity": {
+      "type": "string"
+    },
+    "policyType": {
+      "type": "string"
+    },
+    "policyHolderFirstName": {
+      "type": "string"
+    },
+    "policyHolderMiddleName": {
+      "type": "string"
+    },
+    "policyHolderLastName": {
+      "type": "string"
+    },
+    "policyPhone": {
+      "type": "string"
+    },
+    "policyCompanyName": {
+      "type": "string"
+    },
+    "nin": {
+      "type": "string"
+    },
+    "policyEmail": {
+      "type": "email"
+    },
+    "issueDate": {
+      "type": "date"
+    },
+    "policyAddress": {
+      "type": "text"
+    },
+    "companyPolicyHolderName": {
+      "type": "string"
+    },
+    "companyPhone": {
+      "type": "string"
+    },
+    "companyEmail": {
+      "type": "email"
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "companyIssueDate": {
+      "type": "date"
+    },
+    "companyAddress": {
+      "type": "text"
+    }
+  }
+}
