@@ -16,7 +16,7 @@ export default function ContactPage() {
           {/* Contact Info */}
           <div className="space-y-12">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-6">Let's build the future together</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">Let&apos;s build the future together</h2>
               <p className="text-gray-400 leading-relaxed max-w-md">
                 Whether you have a question about our services, or want to discuss a potential project, our team is ready to help.
               </p>

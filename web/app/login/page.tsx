@@ -4,12 +4,60 @@ import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import Image from "next/image";
 import { getLoginPage, getLoginSlides } from "@/services/strapi";
+
+interface StrapiImage {
+  url: string;
+  data?: {
+    attributes: {
+      url: string;
+    };
+  };
+}
+
+interface StrapiAttributes {
+  title?: string;
+  description?: string;
+  pageTitle?: string;
+  subtitle?: string;
+  signupText?: string;
+  logo?: {
+    data: {
+      attributes: {
+        url: string;
+      };
+    };
+  };
+  image?: {
+    data: {
+      attributes: {
+        url: string;
+      };
+    };
+  };
+}
+
+interface PageData {
+  pageTitle?: string;
+  subtitle?: string;
+  signupText?: string;
+  logo?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface Slide {
+  id: number;
+  title?: string;
+  description?: string;
+  image?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
 
 export default function LoginPage() {
   const [current, setCurrent] = useState(0);
-  const [page, setPage] = useState<any>(null);
-  const [slides, setSlides] = useState<any[]>([]);
+  const [page, setPage] = useState<PageData | null>(null);
+  const [slides, setSlides] = useState<Slide[]>([]);
 
   useEffect(() => {
     getLoginPage().then(setPage);
@@ -57,11 +105,14 @@ export default function LoginPage() {
 
                   return (
                     <>
-                      <img
-                        src={imageUrl}
-                        alt={slide.title || slide.attributes?.title}
-                        className="w-full h-72 object-cover rounded-3xl"
-                      />
+                      <div className="relative w-full h-72">
+                        <Image
+                          src={imageUrl || "/placeholder.jpg"}
+                          alt={slide.title || slide.attributes?.title || "Login Slide"}
+                          fill
+                          className="object-cover rounded-3xl"
+                        />
+                      </div>
 
                       <h1 className="text-5xl font-bold mt-8">
                         {slide.title || slide.attributes?.title}
@@ -96,11 +147,14 @@ export default function LoginPage() {
             <div className="w-full max-w-md border border-gray-700 rounded-2xl p-10">
               <div className="text-center">
                 {logoUrl && (
-                  <img
-                    src={logoUrl}
-                    alt="QIB Group"
-                    className="mx-auto h-16 w-auto"
-                  />
+                  <div className="relative h-16 w-full mb-4">
+                    <Image
+                      src={logoUrl}
+                      alt="QIB Group"
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
                 )}
 
                 <h2 className="mt-4 text-3xl font-bold">
@@ -163,4 +217,4 @@ export default function LoginPage() {
       <Footer />
     </>
   );
-}
+}

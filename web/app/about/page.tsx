@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   getAboutPage,
   getTeamMembers,
@@ -13,21 +14,99 @@ import {
   getAboutGallery,
 } from "@/services/strapi";
 
+interface StrapiImage {
+  url: string;
+  data?: {
+    attributes: {
+      url: string;
+    };
+  };
+}
+
+interface StrapiAttributes {
+  title?: string;
+  description?: string;
+  vision?: string;
+  mission?: string;
+  values?: string[];
+  name?: string;
+  role?: string;
+  bio?: string;
+  photo?: {
+    data: {
+      attributes: {
+        url: string;
+      };
+    };
+  };
+  image?: {
+    data: {
+      attributes: {
+        url: string;
+      };
+    };
+  };
+}
+
+interface AboutData {
+  vision?: string;
+  mission?: string;
+  values?: string[];
+  attributes?: StrapiAttributes;
+}
+
+interface TeamMember {
+  id: number;
+  name?: string;
+  role?: string;
+  bio?: string;
+  photo?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface Slide {
+  id: number;
+  title?: string;
+  description?: string;
+  image?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface StrategicPartner {
+  id: number;
+  title?: string;
+  description?: string;
+  image?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface CEOProfile {
+  name?: string;
+  bio?: string;
+  photo?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface GalleryItem {
+  image?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
 export default function AboutPage() {
-  const [about, setAbout] = useState<any>(null);
-  const [team, setTeam] = useState<any[]>([]);
-  const [slides, setSlides] = useState<any[]>([]);
-  const [partners, setPartners] = useState<any[]>([]);
-  const [ceo, setCeo] = useState<any>(null);
-  const [gallery, setGallery] = useState<any[]>([]);
+  const [about, setAbout] = useState<AboutData | null>(null);
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [partners, setPartners] = useState<StrategicPartner[]>([]);
+  const [ceo, setCeo] = useState<CEOProfile | null>(null);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [current, setCurrent] = useState(0);
   const [expandedPartner, setExpandedPartner] = useState<number | null>(null);
 
   const truncateText = (text: string, words = 70) => {
-  const split = text.split(" ");
-  if (split.length <= words) return text;
-  return split.slice(0, words).join(" ") + "...";
-};
+    const split = text.split(" ");
+    if (split.length <= words) return text;
+    return split.slice(0, words).join(" ") + "...";
+  };
 
   useEffect(() => {
     getAboutPage().then(setAbout).catch(() => setAbout({}));
@@ -75,7 +154,7 @@ export default function AboutPage() {
                     index === current ? "opacity-100" : "opacity-0"
                   }`}
                   style={{
-                    backgroundImage: `url(${imageUrl})`,
+                    backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -121,14 +200,17 @@ export default function AboutPage() {
         {ceo && (
           <section className="px-8 md:px-20 py-20 bg-[#0096c7]/5">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <img
-                src={`http://localhost:1337${
-                  ceo.photo?.url ||
-                  ceo.attributes?.photo?.data?.attributes?.url
-                }`}
-                alt={ceo.name || ceo.attributes?.name}
-                className="w-full h-150 rounded-3xl object-cover backdrop-blur-md shadow-xl"
-              />
+              <div className="relative w-full h-[600px]">
+                <Image
+                  src={`http://localhost:1337${
+                    ceo.photo?.url ||
+                    ceo.attributes?.photo?.data?.attributes?.url
+                  }`}
+                  alt={ceo.name || ceo.attributes?.name || "CEO Profile"}
+                  fill
+                  className="rounded-3xl object-cover backdrop-blur-md shadow-xl"
+                />
+              </div>
 
               <div>
                 <h2 className="text-4xl font-bold text-[#0683ac]">Alhaji Umar Bida</h2>
@@ -174,11 +256,14 @@ export default function AboutPage() {
                   key={member.id}
                   className="p-8 border border-[#c70000] rounded-2xl text-center backdrop-blur-md shadow-xl hover:border-[#0096c7]/30 transition-all"
                 >
-                  <img
-                    src={imageUrl}
-                    alt={member.name || member.attributes?.name}
-                    className="w-70 h-80 rounded-full object-cover mx-auto"
-                  />
+                  <div className="relative w-40 h-40 mx-auto">
+                    <Image
+                      src={imageUrl || "/placeholder.jpg"}
+                      alt={member.name || member.attributes?.name || "Team Member"}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
 
                   <h3 className="mt-6 text-xl font-bold">
                     {member.name || member.attributes?.name}
@@ -251,12 +336,14 @@ export default function AboutPage() {
                         : "";
 
                     return (
-                      <img
-                        key={index}
-                        src={imageUrl}
-                        alt="Gallery"
-                        className="w-80 h-26 object-fit rounded-2xl flex-shrink-0"
-                      />
+                      <div key={index} className="relative w-80 h-24 flex-shrink-0">
+                        <Image
+                          src={imageUrl || "/placeholder.jpg"}
+                          alt="Gallery"
+                          fill
+                          className="object-contain rounded-2xl"
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -290,11 +377,14 @@ export default function AboutPage() {
                   key={partner.id}
                   className="border border-[#0096c7] rounded-3xl overflow-hidden"
                 >
-                  <img
-                    src={imageUrl}
-                    alt={partner.title || partner.attributes?.title}
-                    className="w-full h-64 object-cover"
-                  />
+                  <div className="relative w-full h-64">
+                    <Image
+                      src={imageUrl || "/placeholder.jpg"}
+                      alt={partner.title || partner.attributes?.title || "Partner"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
 
                   <div className="p-8">
                     <h3 className="text-2xl font-bold text-[#0092c2]">
@@ -337,4 +427,4 @@ export default function AboutPage() {
       <Footer />
     </>
   );
-}
+}

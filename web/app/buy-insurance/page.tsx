@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Mail, Lock, Building2, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 export default function SignupPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -270,11 +270,14 @@ const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
                               }`}
                             >
                               <div className="flex flex-col items-center text-center gap-4">
-                                <img
-                                  src={insurer.logo}
-                                  alt={insurer.name}
-                                  className="h-14 object-contain"
-                                />
+                                <div className="relative h-14 w-full">
+                                  <Image
+                                    src={insurer.logo}
+                                    alt={insurer.name}
+                                    fill
+                                    className="object-contain"
+                                  />
+                                </div>
 
                                 <span className="text-sm md:text-base">
                                   {insurer.name}

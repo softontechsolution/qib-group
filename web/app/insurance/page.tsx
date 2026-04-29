@@ -13,6 +13,7 @@ import {
   HeartPulse,
   Car,
   Building2,
+  LucideIcon,
 } from "lucide-react";
 import {
   getInsurancePage,
@@ -22,7 +23,75 @@ import {
   getInsuranceBenefits,
   getTestimonials,
 } from "@/services/strapi";
-const iconMap: Record<string, any> = {
+
+interface StrapiImage {
+  url: string;
+}
+
+interface StrapiAttributes {
+  title?: string;
+  description?: string;
+  icon?: string;
+  testimony?: string;
+  name?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactAddress?: string;
+  image?: {
+    data: {
+      attributes: {
+        url: string;
+      };
+    };
+  };
+}
+
+interface PageData {
+  contactEmail?: string;
+  contactPhone?: string;
+  contactAddress?: string;
+  attributes?: StrapiAttributes;
+}
+
+interface Slide {
+  id: number;
+  title?: string;
+  description?: string;
+  image?: StrapiImage;
+  attributes?: StrapiAttributes;
+}
+
+interface Feature {
+  id: number;
+  title?: string;
+  icon?: string;
+  attributes?: StrapiAttributes;
+}
+
+interface Policy {
+  id: number;
+  title?: string;
+  description?: string;
+  icon?: string;
+  attributes?: StrapiAttributes;
+}
+
+interface Benefit {
+  id: number;
+  title?: string;
+  description?: string;
+  icon?: string;
+  attributes?: StrapiAttributes;
+}
+
+interface Testimonial {
+  id: number;
+  name?: string;
+  testimony?: string;
+  attributes?: StrapiAttributes;
+}
+
+const iconMap: Record<string, LucideIcon> = {
   shield: Shield,
   clock: Clock3,
   wallet: Wallet,
@@ -34,31 +103,31 @@ const iconMap: Record<string, any> = {
 
 export default function InsurancePage() {
   const [current, setCurrent] = useState(0);
-  const [page, setPage] = useState<any>({
+  const [page, setPage] = useState<PageData>({
     contactEmail: "info@qibgroup.com",
     contactPhone: "+234 800 QIB GROUP",
     contactAddress: "Abuja, Nigeria"
   });
-  const [slides, setSlides] = useState<any[]>([
+  const [slides, setSlides] = useState<Slide[]>([
     { id: 1, title: "Premium Insurance", description: "Protecting what matters most to you with tailored coverage." }
   ]);
-  const [features, setFeatures] = useState<any[]>([
+  const [features, setFeatures] = useState<Feature[]>([
     { id: 1, title: "Life Insurance", icon: "heart" },
     { id: 2, title: "Auto Insurance", icon: "car" },
     { id: 3, title: "Home Insurance", icon: "building" }
   ]);
-  const [policies, setPolicies] = useState<any[]>([
+  const [policies, setPolicies] = useState<Policy[]>([
     { id: 1, title: "Comprehensive Cover", description: "All-inclusive protection for peace of mind.", icon: "shield" },
     { id: 2, title: "Standard Policy", description: "Reliable coverage for everyday needs.", icon: "wallet" },
     { id: 3, title: "Flexi-Plan", description: "Customizable insurance tailored to you.", icon: "clock" }
   ]);
-  const [benefits, setBenefits] = useState<any[]>([
+  const [benefits, setBenefits] = useState<Benefit[]>([
     { id: 1, title: "Fast Claims", description: "Quick and hassle-free processing.", icon: "clock" },
     { id: 2, title: "Expert Support", description: "Available whenever you need us.", icon: "support" },
     { id: 3, title: "Global Reach", description: "Coverage that follows you anywhere.", icon: "shield" },
     { id: 4, title: "Secure Data", description: "Your information is always protected.", icon: "wallet" }
   ]);
-  const [testimonials, setTestimonials] = useState<any[]>([
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([
     { id: 1, name: "Ibrahim Ahmed", testimony: "QIB Group provided the best insurance package for my business." }
   ]);
 
@@ -89,7 +158,6 @@ export default function InsurancePage() {
         {/* Hero Slider */}
         <section className="relative h-[85vh] overflow-hidden">
           {slides.map((slide, index) => {
-            console.log(slide);
             const imageUrl =
               slide.image?.url
                 ? `http://localhost:1337${slide.image.url}`
@@ -104,7 +172,7 @@ export default function InsurancePage() {
                   index === current ? "opacity-100" : "opacity-0"
                 }`}
                 style={{
-                  backgroundImage: `url(${imageUrl})`,
+                  backgroundImage: imageUrl ? `url(${imageUrl})` : "none",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -345,7 +413,7 @@ export default function InsurancePage() {
                 transition={{ delay: index * 0.1 }}
                 className="p-10 border border-white/5 bg-gray-900/20 backdrop-blur-sm rounded-[2rem] relative"
               >
-                <span className="absolute top-8 left-8 text-6xl text-[#0096c7]/20 font-serif leading-none italic select-none">"</span>
+                <span className="absolute top-8 left-8 text-6xl text-[#0096c7]/20 font-serif leading-none italic select-none">&quot;</span>
                 <p className="text-gray-400 text-lg italic leading-relaxed relative z-10 pt-4">
                   {item.testimony || item.attributes?.testimony}
                 </p>
@@ -364,4 +432,4 @@ export default function InsurancePage() {
       <Footer />
     </>
   );
-}
+}

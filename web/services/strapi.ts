@@ -19,7 +19,7 @@ export const getProjects = async () => {
   return res.data.data;
 };
 
-export const submitContact = async (payload: any) => {
+export const submitContact = async (payload: Record<string, string>) => {
   const res = await API.post("/contacts", {
     data: payload
   });

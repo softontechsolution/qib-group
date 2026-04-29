@@ -4,8 +4,20 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { getNews } from "@/services/strapi";
 
+interface NewsArticle {
+  id: number;
+  title?: string;
+  excerpt?: string;
+  publishedAt?: string;
+  attributes?: {
+    title?: string;
+    excerpt?: string;
+    publishedAt?: string;
+  };
+}
+
 export default function News() {
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
 
   useEffect(() => {
     getNews().then(setArticles);

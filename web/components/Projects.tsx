@@ -5,8 +5,20 @@ import { motion } from "framer-motion";
 import { getProjects } from "@/services/strapi";
 import Link from "next/link";
 
+interface ProjectItem {
+  id: number;
+  title?: string;
+  description?: string;
+  location?: string;
+  attributes?: {
+    title?: string;
+    description?: string;
+    location?: string;
+  };
+}
+
 export default function Projects() {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
 
   useEffect(() => {
     getProjects().then(setProjects);

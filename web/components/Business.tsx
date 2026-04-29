@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { getBusinesses } from "@/services/strapi";
 
+interface BusinessItem {
+  id: number;
+  name: string;
+  description: string;
+}
+
 export default function Business() {
-  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
 
   useEffect(() => {
     getBusinesses().then(setBusinesses);
