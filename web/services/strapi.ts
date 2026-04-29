@@ -19,7 +19,7 @@ export const getProjects = async () => {
   return res.data.data;
 };
 
-export const submitContact = async (payload: any) => {
+export const submitContact = async (payload: Record<string, string>) => {
   const res = await API.post("/contacts", {
     data: payload
   });
@@ -106,11 +106,12 @@ export const getHeroSlides = async () => {
   return res.data.data;
 };
 
-export async function submitMotorInsurance(data: any) {
+export async function submitMotorInsurance(data: Record<string, unknown>) {
+  const d = data as Record<string, string | null>;
   const cleanData = {
     ...data,
-    issueDate: data.issueDate ? data.issueDate : null,
-    companyIssueDate: data.companyIssueDate ? data.companyIssueDate : null,
+    issueDate: d.issueDate ? d.issueDate : null,
+    companyIssueDate: d.companyIssueDate ? d.companyIssueDate : null,
   };
 
   const res = await fetch(

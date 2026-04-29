@@ -5,8 +5,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { getHeroSlides } from "@/services/strapi";
 
+interface HeroSlide {
+  id: number;
+  title?: string;
+  subtitle?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  image?: {
+    url: string;
+  };
+  attributes?: {
+    title?: string;
+    subtitle?: string;
+    buttonText?: string;
+    buttonLink?: string;
+    image?: {
+      data: {
+        attributes: {
+          url: string;
+        };
+      };
+    };
+  };
+}
+
 export default function Hero() {
-  const [slides, setSlides] = useState<any[]>([]);
+  const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {

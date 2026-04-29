@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { User, Mail, Lock, Building2, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { submitMotorInsurance } from "@/services/strapi";
 
 export default function SignupPage() {
@@ -110,10 +110,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       });
 
       setSuccess("Registration submitted successfully.");
-    } catch (error: any) {
-  console.error("Submission error:", error);
-  setSuccess(error.message || "Submission failed");
-} finally {
+    } catch (error) {
+      const err = error as { message?: string };
+      console.error("Submission error:", err);
+      setSuccess(err.message || "Submission failed");
+    } finally {
       setLoading(false);
     }
 };
@@ -329,11 +330,14 @@ const handleSubmit = async (e: React.FormEvent) => {
                               }`}
                             >
                               <div className="flex flex-col items-center text-center gap-4">
-                                <img
-                                  src={insurer.logo}
-                                  alt={insurer.name}
-                                  className="h-14 object-contain"
-                                />
+                                <div className="relative h-14 w-full">
+                                  <Image
+                                    src={insurer.logo}
+                                    alt={insurer.name}
+                                    fill
+                                    className="object-contain"
+                                  />
+                                </div>
 
                                 <span className="text-sm md:text-base">
                                   {insurer.name}

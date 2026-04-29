@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { getHomepage } from "@/services/strapi";
 
+interface HomepageData {
+  aboutText: string;
+}
+
 export default function About() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<HomepageData | null>(null);
 
   useEffect(() => {
     getHomepage().then(setData);

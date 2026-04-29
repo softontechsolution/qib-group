@@ -199,11 +199,42 @@ function ProgressBar({ progress }: { progress: number }) {
 
 /* ─── Main Page ─── */
 
+interface Project {
+  id: number;
+  title?: string;
+  description?: string;
+  location?: string;
+  category?: string;
+  status?: string;
+  year?: string;
+  image?: string;
+  progress?: number;
+  budget?: string;
+  impact?: string;
+  attributes?: {
+    title?: string;
+    description?: string;
+    location?: string;
+    category?: string;
+    status?: string;
+    year?: string;
+    image?: {
+      data: {
+        attributes: {
+          url: string;
+        };
+      };
+    };
+  };
+}
+
+/* ─── Main Page ─── */
+
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,

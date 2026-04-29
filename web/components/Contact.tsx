@@ -78,7 +78,7 @@ export default function Contact() {
           >
             <div>
               <h2 className="text-2xl md:text-3xl font-bold leading-tight">
-                Let's build the future together
+                Let&apos;s build the future together
               </h2>
 
               <p className="mt-6 text-lg text-gray-600 leading-relaxed">
