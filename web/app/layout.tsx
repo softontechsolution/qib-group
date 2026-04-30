@@ -28,6 +28,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
       <body suppressHydrationWarning className="min-h-full bg-white text-black selection:bg-[#0096c7]/30 selection:text-[#0096c7]">
         <PageTransition>

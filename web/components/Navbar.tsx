@@ -31,6 +31,7 @@ export default function Navbar({ showLogin = false }) {
             alt="QIB Group"
             width={160}
             height={48}
+            priority
             className="h-10 w-auto group-hover:scale-105 transition-transform"
           />
         </Link>
