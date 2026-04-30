@@ -258,7 +258,7 @@ export default function AboutPage() {
                 >
                   <div className="relative w-40 h-40 mx-auto">
                     <Image
-                      src={imageUrl || "/placeholder.jpg"}
+                      src={imageUrl || "placeholder.jpg"}
                       alt={member.name || member.attributes?.name || "Team Member"}
                       fill
                       className="rounded-full object-cover"
@@ -427,4 +427,4 @@ export default function AboutPage() {
       <Footer />
     </>
   );
-}
+}
