@@ -585,6 +585,39 @@ export interface ApiCeoProfileCeoProfile extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiCertificateTemplateCertificateTemplate
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'certificate_templates';
+  info: {
+    displayName: 'certificate-template';
+    pluralName: 'certificate-templates';
+    singularName: 'certificate-template';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    background: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::certificate-template.certificate-template'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactContact extends Struct.CollectionTypeSchema {
   collectionName: 'contacts';
   info: {
@@ -910,6 +943,8 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
   };
   attributes: {
     address: Schema.Attribute.Text;
+    certificateNumber: Schema.Attribute.String;
+    certificateUrl: Schema.Attribute.String;
     chassisNumber: Schema.Attribute.String;
     classOfInsurance: Schema.Attribute.String;
     companyAddress: Schema.Attribute.Text;
@@ -922,11 +957,12 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    dateOfBirth: Schema.Attribute.Date;
     email: Schema.Attribute.Email;
+    emailSent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     engineCapacity: Schema.Attribute.String;
     engineNumber: Schema.Attribute.String;
     firstName: Schema.Attribute.String;
-    issueDate: Schema.Attribute.Date;
     lastName: Schema.Attribute.String;
     lga: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -937,6 +973,17 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
       Schema.Attribute.Private;
     mobileNumber: Schema.Attribute.String;
     nin: Schema.Attribute.String;
+    paymentAmount: Schema.Attribute.Decimal;
+    paymentDate: Schema.Attribute.DateTime;
+    paymentMethod: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'paystack'>;
+    paymentProcessed: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    paymentReference: Schema.Attribute.String;
+    paymentStatus: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'failed', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     plateFirst: Schema.Attribute.String;
     plateLast: Schema.Attribute.String;
     plateMiddle: Schema.Attribute.String;
@@ -946,11 +993,19 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     policyHolderFirstName: Schema.Attribute.String;
     policyHolderLastName: Schema.Attribute.String;
     policyHolderMiddleName: Schema.Attribute.String;
+    policyNumber: Schema.Attribute.String;
     policyPhone: Schema.Attribute.String;
+    policyStatus: Schema.Attribute.Enumeration<
+      ['draft', 'active', 'expired', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
     policyType: Schema.Attribute.String;
     preferredInsurer: Schema.Attribute.String;
+    premium: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
+    registrationNumber: Schema.Attribute.String;
     state: Schema.Attribute.String;
+    sumAssured: Schema.Attribute.BigInteger;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1058,6 +1113,40 @@ export interface ApiStrategicPartnerStrategicPartner
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSystemCounterSystemCounter
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'system_counters';
+  info: {
+    displayName: 'system-counter';
+    pluralName: 'system-counters';
+    singularName: 'system-counter';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    certificatePrefix: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'WAX26/021'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::system-counter.system-counter'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.DefaultTo<'POLICY'>;
+    prefix: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'NPF/EMPT/QIB/26/021'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    value: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<20>;
   };
 }
 
@@ -1637,6 +1726,7 @@ declare module '@strapi/strapi' {
       'api::about-slide.about-slide': ApiAboutSlideAboutSlide;
       'api::business.business': ApiBusinessBusiness;
       'api::ceo-profile.ceo-profile': ApiCeoProfileCeoProfile;
+      'api::certificate-template.certificate-template': ApiCertificateTemplateCertificateTemplate;
       'api::contact.contact': ApiContactContact;
       'api::hero-slide.hero-slide': ApiHeroSlideHeroSlide;
       'api::homepage.homepage': ApiHomepageHomepage;
@@ -1651,6 +1741,7 @@ declare module '@strapi/strapi' {
       'api::new.new': ApiNewNew;
       'api::project.project': ApiProjectProject;
       'api::strategic-partner.strategic-partner': ApiStrategicPartnerStrategicPartner;
+      'api::system-counter.system-counter': ApiSystemCounterSystemCounter;
       'api::team-member.team-member': ApiTeamMemberTeamMember;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
       'plugin::content-releases.release': PluginContentReleasesRelease;

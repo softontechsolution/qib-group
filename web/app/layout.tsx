@@ -34,6 +34,7 @@ export default function RootLayout({
         <PageTransition>
           {children}
         </PageTransition>
+        <script src="https://js.paystack.co/v1/inline.js"></script>
       </body>
     </html>
   );

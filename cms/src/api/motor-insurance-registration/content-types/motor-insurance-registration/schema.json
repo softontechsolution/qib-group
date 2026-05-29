@@ -101,7 +101,7 @@
     "policyEmail": {
       "type": "email"
     },
-    "issueDate": {
+    "dateOfBirth": {
       "type": "date"
     },
     "policyAddress": {
@@ -124,6 +124,65 @@
     },
     "companyAddress": {
       "type": "text"
+    },
+    "sumAssured": {
+      "type": "biginteger"
+    },
+    "premium": {
+      "type": "decimal"
+    },
+    "paymentStatus": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "paymentReference": {
+      "type": "string"
+    },
+    "paymentMethod": {
+      "type": "string",
+      "default": "paystack"
+    },
+    "paymentAmount": {
+      "type": "decimal"
+    },
+    "policyNumber": {
+      "type": "string"
+    },
+    "certificateNumber": {
+      "type": "string"
+    },
+    "paymentDate": {
+      "type": "datetime"
+    },
+    "certificateUrl": {
+      "type": "string"
+    },
+    "policyStatus": {
+      "type": "enumeration",
+      "default": "draft",
+      "enum": [
+        "draft",
+        "active",
+        "expired",
+        "cancelled"
+      ]
+    },
+    "registrationNumber": {
+      "type": "string"
+    },
+    "paymentProcessed": {
+      "type": "boolean",
+      "default": false
+    },
+    "emailSent": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
