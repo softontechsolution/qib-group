@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 1. Fixes the workspace root warning [1]
+    turbopack: {
+      root: process.cwd(),
+    },
+  // 2. Your existing Strapi image configurations
   images: {
     remotePatterns: [
       {
@@ -10,7 +15,7 @@ const nextConfig: NextConfig = {
         pathname: '**',
       },
     ],
-    unoptimized: true, // This skips the security check and the processing
+    unoptimized: true, 
   },
 };
 
