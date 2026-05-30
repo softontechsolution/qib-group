@@ -12,28 +12,30 @@ module.exports = {
           "api::motor-insurance-registration.motor-insurance-registration"
         )
         .findOne({
-          where: {
-            id: registrationId,
-          },
+          where: { id: registrationId },
         });
 
       if (!registration) {
         throw new Error("Registration not found");
       }
 
+      const policyNumber = numbers.policyNumber;
+      const certificateNumber = numbers.certificateNumber;
+
       // =====================================================
-      // STEP 2 — PREVENT DUPLICATE PROCESSING
+      // STEP 2 — IDEMPOTENCY GUARD (IMPORTANT FIX)
       // =====================================================
 
-      if (registration.status === "completed") {
+      if (registration.paymentProcessed === true) {
         return {
           success: true,
-          message: "Already processed",
+          message: "Already fully processed",
+          certificateUrl: registration.certificateUrl,
         };
       }
 
       // =====================================================
-      // STEP 3 — GENERATE PDF
+      // STEP 3 — GENERATE PDF (UPDATED SERVICE CALL)
       // =====================================================
 
       const pdfService = strapi.service(
@@ -43,20 +45,14 @@ module.exports = {
       const pdfResult =
         await pdfService.generateCertificate({
           registration,
-          policyNumber: numbers.policyNumber,
-          certificateNumber:
-            numbers.certificateNumber,
+          policyNumber,
+          certificateNumber,
         });
 
-      // =====================================================
-      // STEP 4 — BUILD CERTIFICATE URL
-      // =====================================================
-
-      const certificateUrl =
-        pdfResult.certificateUrl;
+      const certificateUrl = pdfResult.certificateUrl;
 
       // =====================================================
-      // STEP 5 — UPDATE STRAPI
+      // STEP 4 — UPDATE STRAPI (CORE STATE UPDATE)
       // =====================================================
 
       await strapi.db
@@ -64,19 +60,19 @@ module.exports = {
           "api::motor-insurance-registration.motor-insurance-registration"
         )
         .update({
-          where: {
-            id: registrationId,
-          },
+          where: { id: registrationId },
           data: {
             certificateUrl,
+            policyNumber,
+            certificateNumber,
             policyStatus: "active",
-            status: "issued",
-            issuedAt: new Date(),
+            paymentProcessed: true,
+            paymentDate: new Date(),
           },
         });
 
       // =====================================================
-      // STEP 6 — PUSH TO NPF API
+      // STEP 5 — PUSH TO NPF API (UNCHANGED BUT SAFE)
       // =====================================================
 
       try {
@@ -85,98 +81,70 @@ module.exports = {
           {
             method: "POST",
             headers: {
-              "Content-Type":
-                "application/json",
+              "Content-Type": "application/json",
             },
-
             body: JSON.stringify({
-              CertificateNo:
-                numbers.certificateNumber,
+              CertificateNo: certificateNumber,
+              PolicyNo: policyNumber,
 
-              PolicyNo:
-                numbers.policyNumber,
-
-              ChassisNo:
-                registration.chassisNumber,
-
-              ContactAddress:
-                registration.address,
+              ChassisNo: registration.chassisNumber,
+              ContactAddress: registration.address,
 
               Email: registration.email,
-
-              GSMNo:
-                registration.mobileNumber,
+              GSMNo: registration.mobileNumber,
 
               InsuredName:
-                `${registration.firstName} ${registration.lastName}`,
+                registration.policyHolderFirstName
+                  ? `${registration.policyHolderFirstName} ${registration.policyHolderMiddleName || ""} ${registration.policyHolderLastName || ""}`.trim()
+                  : registration.companyPolicyHolderName ||
+                    registration.companyName,
 
-              Premium:
-                registration.premium,
+              Premium: registration.premium,
 
               RegistrationNo:
                 registration.registrationNumber,
 
-              SumAssured:
-                registration.sumAssured,
+              SumAssured: registration.sumAssured,
 
               TypeOfCover:
-                registration.coverType ===
-                "Comprehensive"
+                registration.coverType === "Comprehensive"
                   ? "C"
                   : "P",
 
-              VehicleMake:
-                registration.vehicleMake,
+              VehicleMake: registration.vehicleMake,
+              VehicleModel: registration.vehicleModel,
+              VehicleColor: registration.vehicleColor,
+              VehicleType: registration.vehicleUse,
 
-              VehicleModel:
-                registration.vehicleModel,
-
-              VehicleColor:
-                registration.vehicleColor,
-
-              VehicleType:
-                registration.vehicleUse,
-
-              YearofMake:
-                registration.vehicleYear,
+              YearofMake: registration.vehicleYear,
             }),
           }
         );
       } catch (npfError) {
-        console.error(
-          "NPF PUSH FAILED:",
-          npfError
-        );
+        console.error("NPF PUSH FAILED:", npfError);
       }
 
       // =====================================================
-      // STEP 7 — SEND EMAIL
+      // STEP 6 — SEND EMAIL (UPDATED SERVICE PATH FIX)
       // =====================================================
 
       try {
         const emailService = strapi.service(
-          "api::email.certificate-email"
+          "api::email.email"
         );
 
         await emailService.sendCertificate({
           registration,
-          policyNumber:
-            numbers.policyNumber,
-
-          certificateNumber:
-            numbers.certificateNumber,
-
+          policyNumber,
+          certificateNumber,
           certificateUrl,
         });
       } catch (emailError) {
-        console.error(
-          "EMAIL FAILED:",
-          emailError
-        );
+        console.error("EMAIL FAILED:", emailError);
       }
 
       // =====================================================
-      // STEP 8 — FINAL UPDATE
+      // STEP 7 — FINAL UPDATE (EMAIL STATUS)
       // =====================================================
 
       await strapi.db
@@ -184,31 +152,28 @@ module.exports = {
           "api::motor-insurance-registration.motor-insurance-registration"
         )
         .update({
-          where: {
-            id: registrationId,
-          },
+          where: { id: registrationId },
           data: {
-            status: "completed",
-            processedAt: new Date(),
+            emailSent: true,
           },
         });
 
       // =====================================================
-      // STEP 9 — SUCCESS
+      // STEP 8 — RESPONSE
       // =====================================================
 
       return {
         success: true,
         certificateUrl,
+        policyNumber,
+        certificateNumber,
       };
+
     } catch (error) {
-      console.error(
-        "PROCESSOR ERROR:",
-        error
-      );
+      console.error("PROCESSOR ERROR:", error);
 
       // =====================================================
-      // MARK FAILED
+      // SAFE FAILURE STATE
       // =====================================================
 
       await strapi.db
@@ -216,11 +181,9 @@ module.exports = {
           "api::motor-insurance-registration.motor-insurance-registration"
         )
         .update({
-          where: {
-            id: registrationId,
-          },
+          where: { id: registrationId },
           data: {
-            status: "failed",
+            policyStatus: "failed",
           },
         });
 

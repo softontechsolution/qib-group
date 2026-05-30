@@ -197,3 +197,8 @@ export async function getNextPolicyCounter() {
   const data = await res.json();
   return data.value;
 }
+
+export const getInsurers = async () => {
+  const res = await API.get("/insurers?populate=*");
+  return res.data.data;
+};

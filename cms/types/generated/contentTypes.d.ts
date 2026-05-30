@@ -869,6 +869,38 @@ export interface ApiInsuranceSlideInsuranceSlide
   };
 }
 
+export interface ApiInsurerInsurer extends Struct.CollectionTypeSchema {
+  collectionName: 'insurers';
+  info: {
+    displayName: 'insurer';
+    pluralName: 'insurers';
+    singularName: 'insurer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::insurer.insurer'
+    > &
+      Schema.Attribute.Private;
+    logo: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    name: Schema.Attribute.String;
+    priority: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLoginPageLoginPage extends Struct.SingleTypeSchema {
   collectionName: 'login_pages';
   info: {
@@ -1735,6 +1767,7 @@ declare module '@strapi/strapi' {
       'api::insurance-page.insurance-page': ApiInsurancePageInsurancePage;
       'api::insurance-policie.insurance-policie': ApiInsurancePolicieInsurancePolicie;
       'api::insurance-slide.insurance-slide': ApiInsuranceSlideInsuranceSlide;
+      'api::insurer.insurer': ApiInsurerInsurer;
       'api::login-page.login-page': ApiLoginPageLoginPage;
       'api::login-slide.login-slide': ApiLoginSlideLoginSlide;
       'api::motor-insurance-registration.motor-insurance-registration': ApiMotorInsuranceRegistrationMotorInsuranceRegistration;

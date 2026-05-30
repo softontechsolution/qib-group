@@ -185,7 +185,7 @@ module.exports = {
             policyNumber,
             certificateNumber,
 
-            paymentVerifiedAt: new Date(),
+            paymentDate: new Date(),
           },
         });
 

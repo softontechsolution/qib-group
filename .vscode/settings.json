@@ -1,3 +1,13 @@
 {
-    "git.ignoreLimitWarning": true
+  "git.ignoreLimitWarning": true,
+  "search.exclude": {
+    "**/.strapi": true,
+    "**/build": true,
+    "**/dist": true
+  },
+  "files.watcherExclude": {
+    "**/.strapi/**": true,
+    "**/build/**": true,
+    "**/dist/**": true
+  }
 }

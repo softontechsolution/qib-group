@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
-    "moduleResolution": "nodenext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2021",
     "checkJs": true,
-    "allowJs": true
-  }
+    "allowJs": true,
+    "strict": false,
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "node_modules",
+    ".strapi",
+    "build",
+    "dist"
+  ]
 }

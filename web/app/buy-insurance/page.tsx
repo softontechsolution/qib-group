@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { submitMotorInsurance } from "@/services/strapi";
+import { submitMotorInsurance, getInsurers } from "@/services/strapi";
 import { initializePaystackPayment } from "@/services/paystack";
 
 const nigeriaData: Record<string, string[]> = {
@@ -52,260 +52,220 @@ export default function SignupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-
-  const [policyType, setPolicyType] = useState<
-    "individual" | "company"
-  >("individual");
+  const [policyType, setPolicyType] = useState<"individual" | "company">("individual");
+  const [insurers, setInsurers] = useState<any[]>([]);
+  const [loadingInsurers, setLoadingInsurers] = useState(false);
 
   const [formData, setFormData] = useState({
-    classOfInsurance: "",
-    coverType: "",
-    vehicleUse: "",
-    preferredInsurer: "",
+      classOfInsurance: "",
+      coverType: "",
+      vehicleUse: "",
+      preferredInsurer: "",
 
-    firstName: "",
-    lastName: "",
-    mobileNumber: "",
-    email: "",
-    state: "",
-    lga: "",
-    address: "",
+      firstName: "",
+      lastName: "",
+      mobileNumber: "",
+      email: "",
+      state: "",
+      lga: "",
+      address: "",
 
-    vehicleState: "",
-    vehicleLga: "",
-    plateFirst: "",
-    plateMiddle: "",
-    plateLast: "",
+      vehicleState: "",
+      vehicleLga: "",
+      plateFirst: "",
+      plateMiddle: "",
+      plateLast: "",
 
-    vehicleMake: "",
-    vehicleModel: "",
-    vehicleColor: "",
-    engineCapacity: "",
-    chassisNumber: "",
-    engineNumber: "",
-    sumAssured: "",
+      vehicleMake: "",
+      vehicleModel: "",
+      vehicleColor: "",
+      engineCapacity: "",
+      chassisNumber: "",
+      engineNumber: "",
+      sumAssured: "",
 
-    policyType: "individual",
+      policyHolderFirstName: "",
+      policyHolderMiddleName: "",
+      policyHolderLastName: "",
+      policyPhone: "",
+      policyEmail: "",
+      nin: "",
+      dateOfBirth: "",
+      policyAddress: "",
 
-    policyHolderFirstName: "",
-    policyHolderMiddleName: "",
-    policyHolderLastName: "",
-    policyPhone: "",
-    policyEmail: "",
-    policyCompanyName: "",
-    nin: "",
-    dateOfBirth: "",
-    policyAddress: "",
+      companyPolicyHolderName: "",
+      companyPhone: "",
+      companyEmail: "",
+      companyName: "",
+      companyIssueDate: "",
+      companyAddress: "",
+    });
 
-    companyPolicyHolderName: "",
-    companyPhone: "",
-    companyEmail: "",
-    companyName: "",
-    companyIssueDate: "",
-    companyAddress: "",
+  const loadInsurers = async () => {
+      try {
+        setLoadingInsurers(true);
+        const data = await getInsurers();
+        setInsurers(data || []);
+      } catch (err) {
+        console.error("Failed to load insurers:", err);
+      } finally {
+        setLoadingInsurers(false);
+      }
+    };
 
-    premium: "",
-
-    paymentStatus: "pending",
-    policyStatus: "pending",
-    certificateGenerated: false,
-    npfSynced: false,
-
-    paystackReference: "",
-    paymentDate: "",
-  });
-
-  const insurers = [
-    {
-      name: "AIICO Insurance",
-      logo: "/insurers/aiico.png",
-    },
-    {
-      name: "Leadway Assurance",
-      logo: "/insurers/leadway.png",
-    },
-    {
-      name: "AXA Mansard",
-      logo: "/insurers/axa.png",
-    },
-    {
-      name: "NEM Insurance",
-      logo: "/insurers/nem.png",
-    },
-  ];
+    // ✅ PUT IT RIGHT HERE 👇 (before return)
+  if (insurers.length === 0 && loadingInsurers) {
+    loadInsurers();
+  }
 
   const handleChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | React.ChangeEvent<HTMLSelectElement>
-      | React.ChangeEvent<HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
-  const nextStep = () =>
-    setStep((prev) => Math.min(prev + 1, 4));
+  const nextStep = () => {
+    if (step === 1 && !canProceedStep1) return;
+    if (step === 2 && !canProceedStep2) return;
+    if (step === 3 && !canProceedStep3) return;
 
-  const prevStep = () =>
-    setStep((prev) => Math.max(prev - 1, 1));
+    setStep((prev) => Math.min(prev + 1, 4));
+  };
+  const prevStep = () => setStep((p) => Math.max(p - 1, 1));
 
   // PREMIUM LOGIC
   const getPremium = () => {
   // THIRD PARTY ONLY
   if (formData.coverType === "Third Party Only") {
-
-    switch (formData.vehicleUse) {
-      case "Private Motor":
-        return 15000;
-
-      case "Commercial":
-        return 20000;
-
-      case "Trucks":
-        return 100000;
-
-      case "Tricycle":
-        return 5000;
-
-      case "Mini Truck":
-        return 100000;
-
-      case "Special Types":
-        return 20000;
-
-      default:
-        return 0;
+      const map: Record<string, number> = {
+        "Private Motor": 15000,
+        Commercial: 20000,
+        Trucks: 100000,
+        Tricycle: 5000,
+        "Mini Truck": 100000,
+        "Special Types": 20000,
+      };
+      return map[formData.vehicleUse] || 0;
     }
-  }
 
   // COMPREHENSIVE
   if (formData.coverType === "Comprehensive") {
-    const sumAssured = Number(formData.sumAssured);
-
-    if (!sumAssured) return 0;
-
-    return sumAssured * 0.05;
-  }
+      const value = Number(formData.sumAssured);
+      return value ? value * 0.05 : 0;
+    }
 
   return 0;
 };
 
   // STEP VALIDATION
   const canProceedStep1 =
-    formData.classOfInsurance &&
-    formData.coverType &&
-    formData.vehicleUse;
+    formData.classOfInsurance.trim() !== "" &&
+    formData.coverType.trim() !== "" &&
+    formData.vehicleUse.trim() !== "";
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const canProceedStep2 =
+    formData.preferredInsurer.trim() !== "";
+
+  const canProceedStep3 =
+    formData.firstName.trim() !== "" &&
+    formData.lastName.trim() !== "" &&
+    formData.mobileNumber.trim() !== "" &&
+    formData.email.trim() !== "" &&
+    formData.state.trim() !== "" &&
+    formData.lga.trim() !== "" &&
+    formData.address.trim() !== "" &&
+    formData.vehicleMake.trim() !== "" &&
+    formData.vehicleModel.trim() !== "" &&
+    formData.vehicleColor.trim() !== "" &&
+    formData.chassisNumber.trim() !== "" &&
+    formData.engineNumber.trim() !== "" &&
+    formData.plateFirst.trim() !== "" &&
+    formData.plateMiddle.trim() !== "" &&
+    formData.plateLast.trim() !== "" &&
+    formData.sumAssured !== "";
+
+  const canSubmit = true; // review step is always allowed
+
+// SUBMITTING FORM DATA
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setLoading(true);
 
-    const registrationNumber = `${formData.plateFirst}${formData.plateMiddle}${formData.plateLast}`;
+    const registrationNumber =
+      `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`;
+
+    const premium = getPremium();
     const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}`;
 
     try {
-      // 1. Save first to Strapi as "pending payment"
+      // ✅ CREATE POLICY (Strapi)
       const saved = await submitMotorInsurance({
-        ...formData,
+        data: {
+          ...formData,
+          policyType,
+          premium,
+          registrationNumber,
 
-        registrationNumber,
-
-        premium: getPremium(),
-        sumAssured: formData.sumAssured,
-        dateOfBirth: formData.dateOfBirth,
-
-        policyType,
-
-        paymentStatus: "pending",
-        policyStatus: "draft",
-        certificateGenerated: false,
-        npfSynced: false,
-
-        companyEmail:
-          formData.companyEmail?.trim() || null,
-
-        policyEmail:
-          formData.policyEmail?.trim() || null,
+          paymentStatus: "pending",
+          policyStatus: "draft",
+          certificateGenerated: false,
+          npfSynced: false,
+        },
       });
 
-      setSuccess(
-        "Registration submitted successfully."
-      );
+      const registration = saved.data;
 
-    const registration = saved.data;      
-      // redirect to Paystack
-      // NEXT:
-    // 2. Start Paystack
-    initializePaystackPayment({
-      email: formData.email,
-      amount: getPremium(), // your logic already built
-      reference: registration.paymentReference,// or generated ref
-      
+      // ✅ PAYSTACK INIT
+      initializePaystackPayment({
+        email: formData.email,
+        amount: premium * 100, // Paystack expects kobo
+        reference,
 
-      // ✅ STEP 7 — SEND METADATA TO PAYSTACK
-      metadata: {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.mobileNumber,
-        registrationId: registration.id,
+        metadata: {
+          registrationId: registration.id,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.mobileNumber,
 
-        vehicle_make: formData.vehicleMake,
-        vehicle_model: formData.vehicleModel,
-        vehicle_plate:
-          `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`,
+          vehicle_make: formData.vehicleMake,
+          vehicle_model: formData.vehicleModel,
+          vehicle_plate: registrationNumber,
 
-        insurance_class: formData.classOfInsurance,
-        cover_type: formData.coverType,
-        vehicle_use: formData.vehicleUse,
+          class_of_insurance: formData.classOfInsurance,
+          cover_type: formData.coverType,
+          vehicle_use: formData.vehicleUse,
+          insurer: formData.preferredInsurer,
 
-        preferred_insurer: formData.preferredInsurer,
+          policy_type: policyType,
+        },
 
-        sum_assured: formData.sumAssured,
+        onSuccess: async (response) => {
+          await fetch(
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                data: {
+                  paystackReference: response.reference,
+                  paymentStatus: "paid",
+                },
+              }),
+            }
+          );
 
-        policy_type: policyType,
-      },
+          setSuccess("Payment successful. Processing policy...");
+        },
 
-      onSuccess: async (response) => {
-        console.log("Payment success:", response);
-
-        // 3. Update Strapi → paid
-        await fetch(
-          `http://localhost:1337/api/motor-insurance-registrations/${saved.data.documentId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              data: {
-                paymentStatus: "paid",
-                paymentReference: response.reference,
-              },
-            }),
-          }
-        );
-
-        setSuccess("Payment successful!");
-      },
-
-      onClose: () => {
-        console.log("Payment cancelled");
-      },
-    });
-    } catch (error) {
-      const err = error as {
-        message?: string;
-      };
-
-      console.error("Submission error:", err);
-
-      setSuccess(
-        err.message || "Submission failed"
-      );
+        onClose: () => {
+          console.log("Payment cancelled");
+        },
+      });
+    } catch (err: any) {
+      setSuccess(err.message || "Submission failed");
     } finally {
       setLoading(false);
     }
@@ -549,49 +509,53 @@ export default function SignupPage() {
                       Select Preferred Insurer
                     </h2>
 
-                    <div className="grid grid-cols-2 gap-5">
-                      {insurers.map((insurer) => (
-                        <button
-                          key={insurer.name}
-                          type="button"
-                          onClick={() => {
-                            setFormData({
-                              ...formData,
-                              preferredInsurer:
-                                insurer.name,
-                              policyCompanyName:
-                                insurer.name,
-                              companyName:
-                                insurer.name,
-                            });
+                    {loadingInsurers ? (
+                      <p className="text-gray-400">Loading insurers...</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-5">
+                        {insurers.map((insurer: any) => {
+                          const logoUrl = insurer.logo?.url
+                            ? `${process.env.STRAPI_URL}${insurer.logo.url}`
+                            : "/placeholder.png";
 
-                            nextStep();
-                          }}
-                          className={`p-6 border rounded-2xl transition-all
-                          ${
-                            formData.preferredInsurer ===
-                            insurer.name
-                              ? "border-[#0096c7] bg-[#0096c7]/10"
-                              : "border-white/10"
-                          }`}
-                        >
-                          <div className="flex flex-col items-center gap-4">
-                            <div className="relative h-14 w-full">
-                              <Image
-                                src={insurer.logo}
-                                alt={insurer.name}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
+                          return (
+                            <button
+                              key={insurer.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  preferredInsurer: insurer.name,
+                                  companyName: insurer.name,
+                                  policyCompanyName: insurer.name,
+                                }));
 
-                            <span>
-                              {insurer.name}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                                nextStep();
+                              }}
+                              className={`p-6 border rounded-2xl transition-all
+                                ${
+                                  formData.preferredInsurer === insurer.name
+                                    ? "border-[#0096c7] bg-[#0096c7]/10"
+                                    : "border-white/10"
+                                }`}
+                            >
+                              <div className="flex flex-col items-center gap-4">
+                                <div className="relative h-14 w-full">
+                                  <Image
+                                    src={logoUrl}
+                                    alt={insurer.name}
+                                    fill
+                                    className="object-contain"
+                                  />
+                                </div>
+
+                                <span>{insurer.name}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1179,6 +1143,25 @@ export default function SignupPage() {
                   </div>
                 )}
 
+                {/* STEP VALIDATION MESSAGES */}
+                {step === 1 && !canProceedStep1 && (
+                  <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-xl mt-4">
+                    Please complete insurance selection to continue
+                  </p>
+                )}
+
+                {step === 2 && !canProceedStep2 && (
+                  <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-xl mt-4">
+                    Please select a preferred insurer to continue
+                  </p>
+                )}
+
+                {step === 3 && !canProceedStep3 && (
+                  <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-xl mt-4">
+                    Please fill all required fields before continuing
+                  </p>
+                )}
+
                 {/* NAV BUTTONS */}
                 <div className="flex justify-between pt-10">
                   {step > 1 ? (
@@ -1192,29 +1175,24 @@ export default function SignupPage() {
                   ) : (
                     <div />
                   )}
-
                   <button
-                    type={
-                      step === 4
-                        ? "submit"
-                        : "button"
-                    }
-                    onClick={
-                      step < 4
-                        ? nextStep
-                        : undefined
-                    }
+                    type={step === 4 ? "submit" : "button"}
+                    onClick={step < 4 ? nextStep : undefined}
                     disabled={
                       loading ||
-                      (step === 1 &&
-                        !canProceedStep1)
+                      (step === 1 && !canProceedStep1) ||
+                      (step === 2 && !canProceedStep2) ||
+                      (step === 3 && !canProceedStep3)
                     }
                     className={`px-8 py-3 rounded-xl text-white transition
-                    ${
-                      loading
-                        ? "bg-gray-500 cursor-not-allowed"
-                        : "bg-[#0096c7]"
-                    }`}
+                      ${
+                        loading ||
+                        (step === 1 && !canProceedStep1) ||
+                        (step === 2 && !canProceedStep2) ||
+                        (step === 3 && !canProceedStep3)
+                          ? "bg-gray-600 cursor-not-allowed"
+                          : "bg-[#0096c7] hover:bg-[#007aa8]"
+                      }`}
                   >
                     {step === 4
                       ? loading

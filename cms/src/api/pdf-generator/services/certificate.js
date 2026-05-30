@@ -1,13 +1,11 @@
 "use strict";
 
+const QRCode = require("qrcode");
+
 const fs = require("fs");
 const path = require("path");
 
-const {
-  PDFDocument,
-  rgb,
-  StandardFonts,
-} = require("pdf-lib");
+const { PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 
 module.exports = {
   async generateCertificate(data) {
@@ -20,35 +18,20 @@ module.exports = {
         await strapi.entityService.findMany(
           "api::certificate-template.certificate-template",
           {
-            filters: {
-              active: true,
-            },
-
+            filters: { active: true },
             populate: ["background"],
           }
         );
 
       if (!templates.length) {
-        throw new Error(
-          "No active certificate template found"
-        );
+        throw new Error("No active certificate template found");
       }
 
       const template = templates[0];
 
-      // =====================================================
-      // STEP 2 — VALIDATE BACKGROUND FILE
-      // =====================================================
-
       if (!template.background) {
-        throw new Error(
-          "Certificate background missing"
-        );
+        throw new Error("Certificate background missing");
       }
-
-      // =====================================================
-      // STEP 3 — LOAD TEMPLATE PDF
-      // =====================================================
 
       const templatePath = path.join(
         process.cwd(),
@@ -57,124 +40,110 @@ module.exports = {
       );
 
       if (!fs.existsSync(templatePath)) {
-        throw new Error(
-          "Template PDF file does not exist"
-        );
+        throw new Error("Template PDF file does not exist");
       }
 
-      const existingPdfBytes =
-        fs.readFileSync(templatePath);
+      const existingPdfBytes = fs.readFileSync(templatePath);
 
       // =====================================================
-      // STEP 4 — LOAD PDF DOCUMENT
+      // STEP 2 — LOAD PDF
       // =====================================================
 
-      const pdfDoc =
-        await PDFDocument.load(existingPdfBytes);
-
+      const pdfDoc = await PDFDocument.load(existingPdfBytes);
       const pages = pdfDoc.getPages();
+      const page = pages[0];
 
-      const firstPage = pages[0];
+      const { height } = page.getSize();
 
-      const { width, height } =
-        firstPage.getSize();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-      // =====================================================
-      // STEP 5 — LOAD FONT
-      // =====================================================
-
-      const font =
-        await pdfDoc.embedFont(
-          StandardFonts.Helvetica
-        );
+      const registration = data.registration;
 
       // =====================================================
-      // STEP 6 — DRAW CUSTOMER DATA
+      // STEP 3 — INSURED NAME (FIXED LOGIC)
       // =====================================================
 
-      firstPage.drawText(
-        `${data.registration.firstName} ${data.registration.lastName}`,
-        {
-          x: 180,
-          y: height - 250,
-          size: 12,
-          font,
-          color: rgb(0, 0, 0),
-        }
-      );
+      let insuredName = "";
 
-      // POLICY NUMBER
-      firstPage.drawText(
-        data.policyNumber,
-        {
-          x: 180,
-          y: height - 280,
-          size: 12,
-          font,
-        }
-      );
+      if (registration.policyHolderFirstName) {
+        insuredName = [
+          registration.policyHolderFirstName,
+          registration.policyHolderMiddleName,
+          registration.policyHolderLastName,
+        ]
+          .filter(Boolean)
+          .join(" ");
+      } else {
+        insuredName =
+          registration.companyPolicyHolderName ||
+          registration.companyName ||
+          `${registration.firstName || ""} ${registration.lastName || ""}`.trim();
+      }
 
-      // CERTIFICATE NUMBER
-      firstPage.drawText(
-        data.certificateNumber,
-        {
-          x: 180,
-          y: height - 310,
-          size: 12,
-          font,
-        }
-      );
+      // =====================================================
+      // STEP 4 — REGISTRATION NUMBER (FIXED)
+      // =====================================================
 
-      // VEHICLE MAKE
-      firstPage.drawText(
-        data.registration.vehicleMake || "",
-        {
-          x: 180,
-          y: height - 340,
-          size: 12,
-          font,
-        }
-      );
+      const registrationNumber =
+        registration.registrationNumber ||
+        `${registration.plateFirst || ""}${registration.plateMiddle || ""}${registration.plateLast || ""}`;
 
-      // VEHICLE MODEL
-      firstPage.drawText(
-        data.registration.vehicleModel || "",
-        {
-          x: 180,
-          y: height - 370,
-          size: 12,
-          font,
-        }
-      );
+      // =====================================================
+      // STEP 5 — DRAW DATA ON LETTERHEAD
+      // =====================================================
 
-      // REGISTRATION NUMBER
-      firstPage.drawText(
-        data.registration.registrationNumber ||
-          "",
-        {
-          x: 180,
-          y: height - 400,
-          size: 12,
-          font,
-        }
-      );
+      page.drawText(insuredName, {
+        x: 180,
+        y: height - 250,
+        size: 12,
+        font,
+        color: rgb(0, 0, 0),
+      });
 
-      // COVER TYPE
-      firstPage.drawText(
-        data.registration.coverType || "",
-        {
-          x: 180,
-          y: height - 430,
-          size: 12,
-          font,
-        }
-      );
+      page.drawText(data.policyNumber, {
+        x: 180,
+        y: height - 280,
+        size: 12,
+        font,
+      });
 
-      // SUM ASSURED
-      firstPage.drawText(
-        `₦${Number(
-          data.registration.sumAssured || 0
-        ).toLocaleString()}`,
+      page.drawText(data.certificateNumber, {
+        x: 180,
+        y: height - 310,
+        size: 12,
+        font,
+      });
+
+      page.drawText(registrationNumber, {
+        x: 180,
+        y: height - 340,
+        size: 12,
+        font,
+      });
+
+      page.drawText(registration.vehicleMake || "", {
+        x: 180,
+        y: height - 370,
+        size: 12,
+        font,
+      });
+
+      page.drawText(registration.vehicleModel || "", {
+        x: 180,
+        y: height - 400,
+        size: 12,
+        font,
+      });
+
+      page.drawText(registration.coverType || "", {
+        x: 180,
+        y: height - 430,
+        size: 12,
+        font,
+      });
+
+      page.drawText(
+        `₦${Number(registration.sumAssured || 0).toLocaleString()}`,
         {
           x: 180,
           y: height - 460,
@@ -183,55 +152,69 @@ module.exports = {
         }
       );
 
-      // ISSUE DATE
-      firstPage.drawText(
-        new Date().toLocaleDateString(),
+      // =====================================================
+      // STEP 6 — ISSUE DATE (SAFE STANDARDIZED FIELD)
+      // =====================================================
+
+      const issueDate = new Date().toLocaleDateString();
+
+      page.drawText(issueDate, {
+        x: 180,
+        y: height - 490,
+        size: 12,
+        font,
+      });
+
+      const frontendUrl = process.env.FRONTEND_URL;
+
+      const verificationUrl =
+        `${frontendUrl}/verify/${data.certificateNumber}`;
+
+      const qrImageBuffer = await QRCode.toBuffer(
+        verificationUrl,
         {
-          x: 180,
-          y: height - 490,
-          size: 12,
-          font,
+          width: 120,
+          margin: 1,
         }
       );
 
+      const qrImage = await pdfDoc.embedPng(qrImageBuffer);
+
+      const qrDims = qrImage.scale(1);
+
+      page.drawImage(qrImage, {
+        x: width - 150,
+        y: 80,
+        width: 100,
+        height: 100,
+      });
+      
       // =====================================================
-      // STEP 7 — SAVE GENERATED PDF
+      // STEP 7 — SAVE PDF
       // =====================================================
 
-      const pdfBytes =
-        await pdfDoc.save();
+      const pdfBytes = await pdfDoc.save();
 
-      const uploadDir = path.join(
-        process.cwd(),
-        "public",
-        "certificates"
-      );
+      const uploadDir = path.join(process.cwd(), "public", "certificates");
 
       if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, {
-          recursive: true,
-        });
+        fs.mkdirSync(uploadDir, { recursive: true });
       }
 
-      const fileName =
-        `${data.certificateNumber}.pdf`;
+      const fileName = `${data.certificateNumber}.pdf`;
 
-      const filePath = path.join(
-        uploadDir,
-        fileName
-      );
+      const filePath = path.join(uploadDir, fileName);
 
       fs.writeFileSync(filePath, pdfBytes);
 
       // =====================================================
-      // STEP 8 — BUILD PUBLIC URL
+      // STEP 8 — PUBLIC URL
       // =====================================================
 
-      const certificateUrl =
-        `${process.env.STRAPI_URL}/certificates/${fileName}`;
+      const certificateUrl = `${process.env.STRAPI_URL}/certificates/${fileName}`;
 
       // =====================================================
-      // STEP 9 — RETURN RESULT
+      // STEP 9 — RETURN
       // =====================================================
 
       return {
@@ -241,11 +224,7 @@ module.exports = {
         certificateUrl,
       };
     } catch (error) {
-      console.error(
-        "PDF GENERATION ERROR:",
-        error
-      );
-
+      console.error("PDF GENERATION ERROR:", error);
       throw error;
     }
   },
