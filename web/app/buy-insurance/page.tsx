@@ -205,8 +205,13 @@ export default function SignupPage() {
         },
       });
 
-      
+      const registrationId = saved.data.id;
+      const documentId = saved.data.documentId;
       const registration = saved.data;
+
+      if (!registration?.documentId) {
+        throw new Error("Missing documentId from Strapi response");
+      }
 
       // ✅ PAYSTACK INIT
       initializePaystackPayment({
@@ -244,19 +249,30 @@ export default function SignupPage() {
           if (!STRAPI_URL) {
             throw new Error("STRAPI URL is not defined");
           }
-          await fetch(
-            `${STRAPI_URL}/api/motor-insurance-registrations/${registration.id}`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                data: {
-                  paystackReference: response.reference,
-                  paymentStatus: "paid",
-                },
-              }),
-            }
-          );
+          
+          const res = await fetch(
+                `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
+                {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    data: {
+                      email: formData.email,
+                      policyEmail: formData.policyEmail,
+
+                      paymentStatus: "paid",
+                      paymentReference: response.reference,
+                      paymentDate: new Date().toISOString(),
+                    },
+                  }),
+                }
+              );
+          const result = await res.json();
+
+          if (!res.ok) {
+            console.log("🔥 STRAPI PUT ERROR:", JSON.stringify(result, null, 2));
+            throw new Error(result?.error?.message || "PUT failed");
+          }
 
           setSuccess("Payment successful. Processing policy...");
         },
