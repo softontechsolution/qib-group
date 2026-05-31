@@ -109,12 +109,15 @@ export const getHeroSlides = async () => {
 export async function submitMotorInsurance(data: Record<string, unknown>) {
   const d = data as Record<string, string | null | number>;
 
+  const cleanEmail = (value: unknown) =>
+  typeof value === "string" && value.trim() ? value.trim() : null;
+
   const cleanData = {
     // customer
     firstName: d.firstName ?? "",
     lastName: d.lastName ?? "",
     mobileNumber: d.mobileNumber ?? "",
-    email: d.email ?? "",
+    email: cleanEmail(d.email),
     state: d.state ?? "",
     lga: d.lga ?? "",
     address: d.address ?? "",
@@ -143,13 +146,13 @@ export async function submitMotorInsurance(data: Record<string, unknown>) {
     policyHolderMiddleName: d.policyHolderMiddleName ?? "",
     policyHolderLastName: d.policyHolderLastName ?? "",
     policyPhone: d.policyPhone ?? "",
-    policyEmail: d.policyEmail ?? "",
+    policyEmail: cleanEmail(d.policyEmail),
     policyCompanyName: d.policyCompanyName ?? "",
     policyAddress: d.policyAddress ?? "",
 
     companyPolicyHolderName: d.companyPolicyHolderName ?? "",
     companyPhone: d.policyType === "company" ? d.companyPhone ?? "" : null,
-    companyEmail: d.policyType === "company" ? d.companyEmail ?? "" : null,
+    companyEmail: d.policyType === "company" ? cleanEmail(d.companyEmail) : null,
     companyName: d.policyType === "company" ? d.companyName ?? "" : null,
     companyAddress: d.policyType === "company" ? d.companyAddress ?? "" : null,
     premium: d.premium ?? null,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -100,24 +100,6 @@ export default function SignupPage() {
       companyIssueDate: "",
       companyAddress: "",
     });
-
-  const loadInsurers = async () => {
-      try {
-        setLoadingInsurers(true);
-        const data = await getInsurers();
-        setInsurers(data || []);
-      } catch (err) {
-        console.error("Failed to load insurers:", err);
-      } finally {
-        setLoadingInsurers(false);
-      }
-    };
-
-    // ✅ PUT IT RIGHT HERE 👇 (before return)
-  if (insurers.length === 0 && loadingInsurers) {
-    loadInsurers();
-  }
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -166,8 +148,7 @@ export default function SignupPage() {
     formData.coverType.trim() !== "" &&
     formData.vehicleUse.trim() !== "";
 
-  const canProceedStep2 =
-    formData.preferredInsurer.trim() !== "";
+  const canProceedStep2 = Boolean(formData.preferredInsurer);
 
   const canProceedStep3 =
     formData.firstName.trim() !== "" &&
@@ -192,8 +173,15 @@ export default function SignupPage() {
 // SUBMITTING FORM DATA
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.email || !formData.policyEmail) {
+      setSuccess("Please fill all required email fields");
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
 
+    console.log("FORM DATA BEFORE SUBMIT:", formData);
     const registrationNumber =
       `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`;
 
@@ -270,6 +258,41 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
+  //INSURER 
+  useEffect(() => {
+      const loadInsurers = async () => {
+        try {
+          setLoadingInsurers(true);
+
+          const res = await getInsurers();
+
+          // ✅ FIX: Strapi returns { data: [...] }
+          const insurersData = Array.isArray(res)
+            ? res
+            : res?.data || [];
+
+          const normalized = insurersData.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            logo: item.logo,
+            isActive: item.isActive,
+            priority: item.priority,
+          }));
+
+          console.log("INSURERS RAW RESPONSE:", res);
+
+          setInsurers(normalized);
+        } catch (err) {
+          console.error("Failed to load insurers:", err);
+          setInsurers([]);
+        } finally {
+          setLoadingInsurers(false);
+        }
+      };
+
+      loadInsurers();
+    }, []);
 
   return (
     <main className="min-h-screen bg-black text-white flex">
@@ -510,52 +533,54 @@ export default function SignupPage() {
                     </h2>
 
                     {loadingInsurers ? (
-                      <p className="text-gray-400">Loading insurers...</p>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-5">
-                        {insurers.map((insurer: any) => {
-                          const logoUrl = insurer.logo?.url
-                            ? `${process.env.STRAPI_URL}${insurer.logo.url}`
-                            : "/placeholder.png";
+                        <p className="text-gray-400">Loading insurers...</p>
+                      ) : insurers.length === 0 ? (
+                        <p className="text-red-400">No insurers available</p>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-5">
+                          {insurers.map((insurer) => {
+                            const logoUrl = insurer.logo?.url
+                              ? `http://localhost:1337${insurer.logo.url}`
+                              : null;
 
-                          return (
-                            <button
-                              key={insurer.id}
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  preferredInsurer: insurer.name,
-                                  companyName: insurer.name,
-                                  policyCompanyName: insurer.name,
-                                }));
+                            return (
+                              <button
+                                key={insurer.id}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({
+                                    ...formData,
+                                    preferredInsurer: insurer.name,
+                                  });
 
-                                nextStep();
-                              }}
-                              className={`p-6 border rounded-2xl transition-all
-                                ${
-                                  formData.preferredInsurer === insurer.name
-                                    ? "border-[#0096c7] bg-[#0096c7]/10"
-                                    : "border-white/10"
-                                }`}
-                            >
-                              <div className="flex flex-col items-center gap-4">
-                                <div className="relative h-14 w-full">
-                                  <Image
-                                    src={logoUrl}
-                                    alt={insurer.name}
-                                    fill
-                                    className="object-contain"
-                                  />
+                                  nextStep();
+                                }}
+                                className={`p-6 border rounded-2xl transition-all
+                                  ${
+                                    formData.preferredInsurer === insurer.name
+                                      ? "border-[#0096c7] bg-[#0096c7]/10"
+                                      : "border-white/10"
+                                  }`}
+                              >
+                                <div className="flex flex-col items-center gap-4">
+                                  {logoUrl && (
+                                    <div className="relative h-14 w-full">
+                                      <Image
+                                        src={logoUrl}
+                                        alt={insurer.name}
+                                        fill
+                                        className="object-contain"
+                                      />
+                                    </div>
+                                  )}
+
+                                  <span>{insurer.name}</span>
                                 </div>
-
-                                <span>{insurer.name}</span>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                   </div>
                 )}
 
