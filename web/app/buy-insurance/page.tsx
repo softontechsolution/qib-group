@@ -120,8 +120,9 @@ export default function SignupPage() {
 
   // PREMIUM LOGIC
   const getPremium = () => {
-  // THIRD PARTY ONLY
-  if (formData.coverType === "Third Party Only") {
+    const vehicleUse = formData.vehicleUse?.trim();
+
+    if (formData.coverType === "Third Party Only") {
       const map: Record<string, number> = {
         "Private Motor": 15000,
         Commercial: 20000,
@@ -130,17 +131,17 @@ export default function SignupPage() {
         "Mini Truck": 100000,
         "Special Types": 20000,
       };
-      return map[formData.vehicleUse] || 0;
+
+      return map[vehicleUse] ?? 0;
     }
 
-  // COMPREHENSIVE
-  if (formData.coverType === "Comprehensive") {
+    if (formData.coverType === "Comprehensive") {
       const value = Number(formData.sumAssured);
-      return value ? value * 0.05 : 0;
+      return value > 0 ? value * 0.05 : 0;
     }
 
-  return 0;
-};
+    return 0;
+  };
 
   // STEP VALIDATION
   const canProceedStep1 =
@@ -178,7 +179,7 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
 
     console.log("FORM DATA BEFORE SUBMIT:", formData);
@@ -204,6 +205,7 @@ export default function SignupPage() {
         },
       });
 
+      
       const registration = saved.data;
 
       // ✅ PAYSTACK INIT
@@ -228,11 +230,22 @@ export default function SignupPage() {
           insurer: formData.preferredInsurer,
 
           policy_type: policyType,
+          custom_fields: [
+            {
+              display_name: "Premium",
+              value: `₦${premium.toLocaleString()}`,
+            },
+          ],
         },
 
         onSuccess: async (response) => {
+          const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
+
+          if (!STRAPI_URL) {
+            throw new Error("STRAPI URL is not defined");
+          }
           await fetch(
-            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
+            `${STRAPI_URL}/api/motor-insurance-registrations/${registration.id}`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
