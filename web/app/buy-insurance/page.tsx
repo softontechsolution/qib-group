@@ -182,13 +182,14 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    console.log("FORM DATA BEFORE SUBMIT:", formData);
+    
     const registrationNumber =
       `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`;
 
     const premium = getPremium();
     const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}`;
 
+    console.log("FORM DATA BEFORE SUBMIT:", formData);
     try {
       // ✅ CREATE POLICY (Strapi)
       const saved = await submitMotorInsurance({
@@ -212,6 +213,8 @@ export default function SignupPage() {
       if (!registration?.documentId) {
         throw new Error("Missing documentId from Strapi response");
       }
+
+      console.log("FORM DATA AFTER SUBMIT:", saved);
 
       // ✅ PAYSTACK INIT
       initializePaystackPayment({
@@ -268,6 +271,7 @@ export default function SignupPage() {
                 }
               );
           const result = await res.json();
+          console.log("RESULT AFTER SUCESSFUL PAYMENT AND UPDATING PAYMENT DETAILS:", result);
 
           if (!res.ok) {
             console.log("🔥 STRAPI PUT ERROR:", JSON.stringify(result, null, 2));
