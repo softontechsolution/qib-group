@@ -5,223 +5,153 @@ const crypto = require("crypto");
 module.exports = {
   async handleWebhook(ctx) {
     try {
+
+      console.log("========== WEBHOOK HIT ==========");
+
+      console.log(ctx.request.body);
       // =====================================================
-      // STEP 1 — GET RAW BODY
+      // 1. EXTRACT RAW BODY FOR EXACT SIGNATURE MATCHING
       // =====================================================
-      const body = ctx.request.rawBody;
+      const bodyString = JSON.stringify(ctx.request.body);
 
       // =====================================================
-      // STEP 2 — GET PAYSTACK SIGNATURE
+      // 2. STRICT SIGNATURE VALIDATION
       // =====================================================
-      const signature =
-        ctx.request.headers["x-paystack-signature"];
+      const signature = ctx.request.headers["x-paystack-signature"];
+
+      console.log(
+
+        ctx.request.headers["x-paystack-signature"]
+
+        );
 
       if (!signature) {
+        ctx.log.warn("Paystack Webhook: Missing signature"); // Use Strapi's internal logger
         return ctx.unauthorized("Missing signature");
       }
 
-      // =====================================================
-      // STEP 3 — VALIDATE SIGNATURE
-      // =====================================================
       const hash = crypto
-        .createHmac(
-          "sha512",
-          process.env.PAYSTACK_SECRET_KEY
-        )
-        .update(body)
+        .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY)
+        .update(bodyString)
         .digest("hex");
 
       if (hash !== signature) {
+        ctx.log.error("Paystack Webhook: Invalid signature detected");
         return ctx.unauthorized("Invalid signature");
       }
 
       // =====================================================
-      // STEP 4 — PARSE EVENT
+      // 3. PARSE EVENT & EARLY EXIT FOR NON-SUCCESS
       // =====================================================
-      const event = JSON.parse(body);
+      const event = JSON.parse(bodyString);
 
-      // =====================================================
-      // STEP 5 — ONLY HANDLE SUCCESSFUL PAYMENTS
-      // =====================================================
       if (event.event !== "charge.success") {
-        ctx.body = {
-          received: true,
-        };
-        return;
+        // Return 200 OK immediately for events we don't care about so Paystack doesn't retry
+        return ctx.send({ received: true }); 
       }
 
       const data = event.data;
-
-      // =====================================================
-      // STEP 6 — VALIDATE REFERENCE
-      // =====================================================
       const reference = data.reference;
+      const registrationId = data.metadata?.registrationId;
 
-      if (!reference?.startsWith("INS-NPF-")) {
-        return ctx.badRequest("Invalid reference");
+      if (!reference?.startsWith("INS-NPF-") || !registrationId) {
+        ctx.log.warn(`Invalid Paystack Payload: Ref: ${reference}, RegID: ${registrationId}`);
+        return ctx.badRequest("Invalid reference or metadata");
       }
 
       // =====================================================
-      // STEP 7 — VERIFY PAYMENT WITH PAYSTACK
-      // =====================================================
-      const verifyRes = await fetch(
-        `https://api.paystack.co/transaction/verify/${reference}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const verifyData = await verifyRes.json();
-
-      if (
-        !verifyData.status ||
-        verifyData.data.status !== "success"
-      ) {
-        return ctx.badRequest("Payment verification failed");
-      }
-
-      // =====================================================
-      // STEP 8 — GET METADATA
-      // =====================================================
-      const metadata = data.metadata || {};
-
-      const registrationId = metadata.registrationId;
-
-      if (!registrationId) {
-        return ctx.badRequest(
-          "Missing registration ID"
-        );
-      }
-
-      // =====================================================
-      // STEP 9 — FETCH REGISTRATION
+      // 4. FETCH REGISTRATION & IDEMPOTENCY CHECK
       // =====================================================
       const registration = await strapi.db
-        .query(
-          "api::motor-insurance-registration.motor-insurance-registration"
-        )
+        .query("api::motor-insurance-registration.motor-insurance-registration")
         .findOne({
-          where: {
-            id: registrationId,
-          },
+          where: { id: registrationId },
         });
 
       if (!registration) {
-        return ctx.notFound(
-          "Insurance registration not found"
-        );
+        return ctx.notFound("Registration not found");
+      }
+
+      // Protect against duplicate webhooks (Idempotency)
+      if (["paid", "processing", "completed"].includes(registration.flowStatus)) {
+        ctx.log.info(`Webhook ignored: Registration ${registrationId} already processed.`);
+        return ctx.send({ success: true, message: "Already processed" });
       }
 
       // =====================================================
-      // STEP 10 — IDEMPOTENCY CHECK
-      // Prevent duplicate processing
+      // 5. GENERATE POLICY NUMBERS
       // =====================================================
-      if (
-        registration.status === "completed" ||
-        registration.paymentStatus === "paid"
-      ) {
-        ctx.body = {
-          success: true,
-          message:
-            "Payment already processed previously",
-        };
+      const counterService = strapi.service("api::system-counter.system-counter");
+      const counterValue = await counterService.getNextCounter();
+      
+      const counter = String(counterValue).padStart(5, "0");
+      const year = new Date().getFullYear().toString().slice(-2);
 
-        return;
-      }
+      const policyNumber = `NPF/EMPT/QIB/${year}/021${counter}`;
+      const certificateNumber = `WAX${year}/021${counter}`;
 
       // =====================================================
-      // STEP 11 — GET SYSTEM COUNTER
+      // 6. ATOMIC-STYLE STATE UPDATE
       // =====================================================
-      const counterService = strapi.service(
-        "api::system-counter.system-counter"
-      );
-
-      const counterValue =
-        await counterService.getNextCounter();
-
-      const counter = String(counterValue).padStart(
-        5,
-        "0"
-      );
-
-      const year = new Date()
-        .getFullYear()
-        .toString()
-        .slice(-2);
-
-      // =====================================================
-      // STEP 12 — GENERATE POLICY NUMBER
-      // =====================================================
-      const policyNumber =
-        `NPF/EMPT/QIB/${year}/021${counter}`;
-
-      // =====================================================
-      // STEP 13 — GENERATE CERTIFICATE NUMBER
-      // =====================================================
-      const certificateNumber =
-        `WAX${year}/021${counter}`;
-
-      // =====================================================
-      // STEP 14 — UPDATE STRAPI
-      // =====================================================
-      await strapi.db
-        .query(
-          "api::motor-insurance-registration.motor-insurance-registration"
-        )
-        .update({
-          where: {
-            id: registrationId,
-          },
-          data: {
-            paymentStatus: "paid",
-            paymentReference: reference,
-            status: "processing",
-            policyStatus: "active",
-
-            policyNumber,
-            certificateNumber,
-
-            paymentDate: new Date(),
-          },
-        });
-
-      // =====================================================
-      // STEP 15 — START PROCESSOR
-      // =====================================================
-      await strapi
-        .service(
-          "api::certificate-processor.processor"
-        )
-        .run(registrationId, {
+      await strapi.db.query("api::motor-insurance-registration.motor-insurance-registration").update({
+        where: { id: registrationId },
+        data: {
+          paymentStatus: "paid",
+          paymentReference: reference,
+          processingStage: "paid",
+          flowStatus: "paid", // Locks out subsequent duplicate webhooks
           policyNumber,
           certificateNumber,
-        });
+          paymentDate: new Date(),
+        },
+      });
 
-      // =====================================================
-      // STEP 16 — SUCCESS RESPONSE
-      // =====================================================
-      ctx.body = {
-        success: true,
-        message:
-          "Payment verified and processing started",
+      console.log("========== WEBHOOK ==========");
 
+        console.log(event.event);
+
+
+
+        console.log(
+
+        "REGISTRATION:",
+
+        registrationId
+
+        );
+
+
+
+        console.log(
+
+        "ADDING JOB TO QUEUE"
+
+        );
+      // =====================================================
+      // 7. DELEGATE HEAVY LIFTING TO QUEUE
+      // =====================================================
+      const queue = require("../../../queues/policy.queue");
+
+      await queue.add("generate-policy", {
+        registrationId,
         policyNumber,
         certificateNumber,
-      };
-    } catch (error) {
-      console.error(
-        "PAYSTACK WEBHOOK ERROR:",
-        error
-      );
+      });
+
+      ctx.log.info(`Payment successful for RegID: ${registrationId}. Policy generation queued.`);
 
       // =====================================================
-      // STEP 17 — FAIL SAFE RESPONSE
+      // 8. ACKNOWLEDGE SUCCESS
       // =====================================================
-      ctx.throw(500, "Webhook processing failed");
+      return ctx.send({
+        success: true,
+        message: "Payment confirmed. Processing started.",
+      });
+
+    } catch (error) {
+      // Enterprise systems never leak stack traces to external services
+      ctx.log.error("PAYSTACK WEBHOOK ERROR:", error);
+      return ctx.internalServerError("Webhook processing failed");
     }
   },
 };

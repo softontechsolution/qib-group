@@ -106,8 +106,10 @@ export const getHeroSlides = async () => {
   return res.data.data;
 };
 
-export async function submitMotorInsurance(data: Record<string, unknown>) {
-  const d = data as Record<string, string | null | number>;
+export async function submitMotorInsurance(payload: Record<string, unknown>) {
+  const d =
+    (payload.data as Record<string, string | number | null>) ||
+    payload;
 
   const cleanEmail = (value: unknown) =>
   typeof value === "string" && value.trim() ? value.trim() : null;
@@ -121,6 +123,7 @@ export async function submitMotorInsurance(data: Record<string, unknown>) {
     state: d.state ?? "",
     lga: d.lga ?? "",
     address: d.address ?? "",
+    nin: d.nin ?? "",
 
     // vehicle
     vehicleMake: d.vehicleMake ?? "",
@@ -166,6 +169,8 @@ export async function submitMotorInsurance(data: Record<string, unknown>) {
     paymentStatus: "pending",
     policyStatus: "draft",
   };
+
+  console.log("FINAL CLEAN DATA:", cleanData);
 
   const res = await fetch(
     "http://localhost:1337/api/motor-insurance-registrations",

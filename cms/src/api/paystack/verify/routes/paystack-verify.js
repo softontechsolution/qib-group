@@ -2,8 +2,8 @@ module.exports = {
   routes: [
     {
       method: "POST",
-      path: "/paystack-webhook",
-      handler: "paystack-webhook.handleWebhook",
+      path: "/paystack/verify",
+      handler: "paystack-verify.verify",
       config: {
         auth: false,
       },

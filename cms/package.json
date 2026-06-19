@@ -23,9 +23,9 @@
     "@strapi/strapi": "5.43.0",
     "axios": "^1.16.1",
     "better-sqlite3": "12.8.0",
-    "bullmq": "^5.77.6",
+    "bullmq": "^5.78.1",
     "fs-extra": "^11.3.4",
-    "ioredis": "^5.11.0",
+    "ioredis": "^5.11.1",
     "nodemailer": "^8.0.10",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.18.0",
@@ -34,6 +34,7 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
+    "socket.io": "^4.8.3",
     "styled-components": "^6.0.0"
   },
   "engines": {

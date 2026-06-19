@@ -183,6 +183,30 @@
     "emailSent": {
       "type": "boolean",
       "default": false
+    },
+    "processingStage": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "paid",
+        "generating_policy",
+        "generating_certificate",
+        "finalizing",
+        "completed"
+      ]
+    },
+    "flowStatus": {
+      "type": "enumeration",
+      "default": "draft",
+      "enum": [
+        "draft",
+        "paid",
+        "processing",
+        "generating",
+        "completed",
+        "emailed"
+      ]
     }
   }
 }

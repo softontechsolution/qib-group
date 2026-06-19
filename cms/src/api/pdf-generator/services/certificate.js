@@ -1,186 +1,62 @@
 "use strict";
 
 const QRCode = require("qrcode");
-
 const fs = require("fs");
 const path = require("path");
-
 const { PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 
 module.exports = {
   async generateCertificate(data) {
     try {
-      // =====================================================
-      // STEP 1 — GET ACTIVE TEMPLATE
-      // =====================================================
+      // 1. Fetch Template
+      const templates = await strapi.entityService.findMany("api::certificate-template.certificate-template", {
+        filters: { active: true },
+        populate: ["background"],
+      });
 
-      const templates =
-        await strapi.entityService.findMany(
-          "api::certificate-template.certificate-template",
-          {
-            filters: { active: true },
-            populate: ["background"],
-          }
-        );
-
-      if (!templates.length) {
-        throw new Error("No active certificate template found");
+      if (!templates?.length || !templates[0].background) {
+        throw new Error("Active certificate template or background missing");
       }
 
-      const template = templates[0];
-
-      if (!template.background) {
-        throw new Error("Certificate background missing");
-      }
-
-      const templatePath = path.join(
-        process.cwd(),
-        "public",
-        template.background.url
-      );
-
-      if (!fs.existsSync(templatePath)) {
-        throw new Error("Template PDF file does not exist");
-      }
-
+      const templatePath = path.join(process.cwd(), "public", templates[0].background.url);
       const existingPdfBytes = fs.readFileSync(templatePath);
 
-      // =====================================================
-      // STEP 2 — LOAD PDF
-      // =====================================================
-
+      // 2. Load PDF
       const pdfDoc = await PDFDocument.load(existingPdfBytes);
-      const pages = pdfDoc.getPages();
-      const page = pages[0];
-
-      const { height } = page.getSize();
-
+      const page = pdfDoc.getPages()[0];
+      const { width, height } = page.getSize(); // Added missing width
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
+      // 3. Data Preparation
       const registration = data.registration;
+      const insuredName = registration.policyHolderFirstName 
+        ? `${registration.policyHolderFirstName} ${registration.policyHolderMiddleName || ""} ${registration.policyHolderLastName}`.trim()
+        : (registration.companyPolicyHolderName || registration.companyName || "");
 
-      // =====================================================
-      // STEP 3 — INSURED NAME (FIXED LOGIC)
-      // =====================================================
+      const registrationNumber = registration.registrationNumber || `${registration.plateFirst || ""}${registration.plateMiddle || ""}${registration.plateLast || ""}`;
 
-      let insuredName = "";
+      // 4. Draw Content
+      const drawSettings = { size: 12, font, color: rgb(0, 0, 0) };
+      const startX = 180;
+      
+      const fields = [
+        { text: insuredName, y: height - 250 },
+        { text: data.policyNumber, y: height - 280 },
+        { text: data.certificateNumber, y: height - 310 },
+        { text: registrationNumber, y: height - 340 },
+        { text: registration.vehicleMake || "", y: height - 370 },
+        { text: registration.vehicleModel || "", y: height - 400 },
+        { text: registration.coverType || "", y: height - 430 },
+        { text: `₦${Number(registration.sumAssured || 0).toLocaleString()}`, y: height - 460 },
+        { text: new Date().toLocaleDateString(), y: height - 490 },
+      ];
 
-      if (registration.policyHolderFirstName) {
-        insuredName = [
-          registration.policyHolderFirstName,
-          registration.policyHolderMiddleName,
-          registration.policyHolderLastName,
-        ]
-          .filter(Boolean)
-          .join(" ");
-      } else {
-        insuredName =
-          registration.companyPolicyHolderName ||
-          registration.companyName ||
-          `${registration.firstName || ""} ${registration.lastName || ""}`.trim();
-      }
+      fields.forEach(f => page.drawText(f.text, { x: startX, y: f.y, ...drawSettings }));
 
-      // =====================================================
-      // STEP 4 — REGISTRATION NUMBER (FIXED)
-      // =====================================================
-
-      const registrationNumber =
-        registration.registrationNumber ||
-        `${registration.plateFirst || ""}${registration.plateMiddle || ""}${registration.plateLast || ""}`;
-
-      // =====================================================
-      // STEP 5 — DRAW DATA ON LETTERHEAD
-      // =====================================================
-
-      page.drawText(insuredName, {
-        x: 180,
-        y: height - 250,
-        size: 12,
-        font,
-        color: rgb(0, 0, 0),
-      });
-
-      page.drawText(data.policyNumber, {
-        x: 180,
-        y: height - 280,
-        size: 12,
-        font,
-      });
-
-      page.drawText(data.certificateNumber, {
-        x: 180,
-        y: height - 310,
-        size: 12,
-        font,
-      });
-
-      page.drawText(registrationNumber, {
-        x: 180,
-        y: height - 340,
-        size: 12,
-        font,
-      });
-
-      page.drawText(registration.vehicleMake || "", {
-        x: 180,
-        y: height - 370,
-        size: 12,
-        font,
-      });
-
-      page.drawText(registration.vehicleModel || "", {
-        x: 180,
-        y: height - 400,
-        size: 12,
-        font,
-      });
-
-      page.drawText(registration.coverType || "", {
-        x: 180,
-        y: height - 430,
-        size: 12,
-        font,
-      });
-
-      page.drawText(
-        `₦${Number(registration.sumAssured || 0).toLocaleString()}`,
-        {
-          x: 180,
-          y: height - 460,
-          size: 12,
-          font,
-        }
-      );
-
-      // =====================================================
-      // STEP 6 — ISSUE DATE (SAFE STANDARDIZED FIELD)
-      // =====================================================
-
-      const issueDate = new Date().toLocaleDateString();
-
-      page.drawText(issueDate, {
-        x: 180,
-        y: height - 490,
-        size: 12,
-        font,
-      });
-
-      const frontendUrl = process.env.FRONTEND_URL;
-
-      const verificationUrl =
-        `${frontendUrl}/verify/${data.certificateNumber}`;
-
-      const qrImageBuffer = await QRCode.toBuffer(
-        verificationUrl,
-        {
-          width: 120,
-          margin: 1,
-        }
-      );
-
+      // 5. QR Code Generation
+      const verificationUrl = `${process.env.FRONTEND_URL}/verify/${data.certificateNumber}`;
+      const qrImageBuffer = await QRCode.toBuffer(verificationUrl, { width: 120, margin: 1 });
       const qrImage = await pdfDoc.embedPng(qrImageBuffer);
-
-      const qrDims = qrImage.scale(1);
 
       page.drawImage(qrImage, {
         x: width - 150,
@@ -189,43 +65,22 @@ module.exports = {
         height: 100,
       });
       
-      // =====================================================
-      // STEP 7 — SAVE PDF
-      // =====================================================
-
+      // 6. Save PDF
       const pdfBytes = await pdfDoc.save();
-
       const uploadDir = path.join(process.cwd(), "public", "certificates");
-
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
       const fileName = `${data.certificateNumber}.pdf`;
-
       const filePath = path.join(uploadDir, fileName);
-
       fs.writeFileSync(filePath, pdfBytes);
-
-      // =====================================================
-      // STEP 8 — PUBLIC URL
-      // =====================================================
-
-      const certificateUrl = `${process.env.STRAPI_URL}/certificates/${fileName}`;
-
-      // =====================================================
-      // STEP 9 — RETURN
-      // =====================================================
 
       return {
         success: true,
-        fileName,
-        filePath,
-        certificateUrl,
+        certificateUrl: `${process.env.STRAPI_URL}/certificates/${fileName}`,
       };
     } catch (error) {
-      console.error("PDF GENERATION ERROR:", error);
-      throw error;
+      strapi.log.error(`[PDF Service] Generation failed: ${error.message}`);
+      throw error; // Rethrow so the Processor knows to mark as failed
     }
   },
 };

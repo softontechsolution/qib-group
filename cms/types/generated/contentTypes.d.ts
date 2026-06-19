@@ -995,6 +995,10 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     engineCapacity: Schema.Attribute.String;
     engineNumber: Schema.Attribute.String;
     firstName: Schema.Attribute.String;
+    flowStatus: Schema.Attribute.Enumeration<
+      ['draft', 'paid', 'processing', 'generating', 'completed', 'emailed']
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
     lastName: Schema.Attribute.String;
     lga: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1034,6 +1038,17 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     policyType: Schema.Attribute.String;
     preferredInsurer: Schema.Attribute.String;
     premium: Schema.Attribute.Decimal;
+    processingStage: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'paid',
+        'generating_policy',
+        'generating_certificate',
+        'finalizing',
+        'completed',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     publishedAt: Schema.Attribute.DateTime;
     registrationNumber: Schema.Attribute.String;
     state: Schema.Attribute.String;

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { submitMotorInsurance, getInsurers } from "@/services/strapi";
 import { initializePaystackPayment } from "@/services/paystack";
+import { io } from "socket.io-client";
 
 const nigeriaData: Record<string, string[]> = {
   Abia: ["Aba North", "Aba South", "Arochukwu", "Bende", "Ikwuano"],
@@ -47,6 +48,16 @@ const nigeriaData: Record<string, string[]> = {
   Zamfara: ["Anka", "Bakura", "Birnin Magaji", "Bukkuyum", "Bungudu"],
 };
 
+const isValidVIN = (vin: string) => {
+  const regex = /^[A-HJ-NPR-Z0-9]{17}$/;
+  return regex.test(vin.toUpperCase());
+};
+
+const isValidEngineNumber = (num: string) => {
+  const regex = /^[A-Z0-9]{6,12}$/;
+  return regex.test(num.toUpperCase());
+};
+
 export default function SignupPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [step, setStep] = useState(1);
@@ -55,6 +66,50 @@ export default function SignupPage() {
   const [policyType, setPolicyType] = useState<"individual" | "company">("individual");
   const [insurers, setInsurers] = useState<any[]>([]);
   const [loadingInsurers, setLoadingInsurers] = useState(false);
+  const [processingStage, setProcessingStage] = useState<string>("idle");
+  const [polling, setPolling] = useState(false);
+  const [registrationId, setRegistrationId] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);  
+
+  const socket = useMemo(() => {
+    return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:1337");
+  }, []);
+
+  const pollStatus = async (documentId: string) => {
+      setPolling(true);
+
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${documentId}`
+          );
+
+          const data = await res.json();
+
+          const stage = data?.data?.processingStage;
+
+          if (stage) {
+            setProcessingStage(stage);
+          }
+
+          if (stage === "completed") {
+            clearInterval(interval);
+            setPolling(false);
+            setSuccess("Policy generation complete. Certificate sent to email.");
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+        }
+      }, 3000); // every 3 seconds
+    };
+
+  const progressValue =
+    processingStage === "paid" ? 20 :
+    processingStage === "generating_policy" ? 40 :
+    processingStage === "generating_certificate" ? 70 :
+    processingStage === "finalizing" ? 90 :
+    processingStage === "completed" ? 100 : 0;
 
   const [formData, setFormData] = useState({
       classOfInsurance: "",
@@ -100,6 +155,7 @@ export default function SignupPage() {
       companyIssueDate: "",
       companyAddress: "",
     });
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -107,6 +163,24 @@ export default function SignupPage() {
       ...prev,
       [e.target.name]: e.target.value,
     }));
+  };
+
+  //STAGE MAPPING
+  const stageMap: Record<string, number> = {
+    paid: 1,
+    generating_policy: 2,
+    generating_certificate: 3,
+    finalizing: 4,
+    completed: 5,
+  };
+
+  //PROGRESS BAR MAPPING
+  const stageLabelMap = {
+    connecting: "Connecting...",
+    payment_verified: "Payment confirmed",
+    generating_certificate: "Generating certificate",
+    sending_email: "Sending email",
+    completed: "Completed 🎉",
   };
 
   const nextStep = () => {
@@ -169,19 +243,85 @@ export default function SignupPage() {
     formData.plateLast.trim() !== "" &&
     formData.sumAssured !== "";
 
+  // CIRCULAR PROGRESS COMPONENT
+  const CircularProgress = ({ progress }: { progress: number }) => {
+    const radius = 50;
+    const stroke = 8;
+    const normalizedRadius = radius - stroke * 0.5;
+    const circumference = normalizedRadius * 2 * Math.PI;
+
+    const strokeDashoffset =
+      circumference - (progress / 100) * circumference;
+
+    return (
+      <svg height={120} width={120}>
+        <circle
+          stroke="#1f2937"
+          fill="transparent"
+          strokeWidth={stroke}
+          r={normalizedRadius}
+          cx={60}
+          cy={60}
+        />
+        <circle
+          stroke="#0096c7"
+          fill="transparent"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference + " " + circumference}
+          style={{ strokeDashoffset }}
+          r={normalizedRadius}
+          cx={60}
+          cy={60}
+        />
+        <text
+          x="50%"
+          y="50%"
+          textAnchor="middle"
+          dy=".3em"
+          fill="white"
+          fontSize="16"
+        >
+          {progress}%
+        </text>
+      </svg>
+    );
+  };
+  
   const canSubmit = true; // review step is always allowed
 
 // SUBMITTING FORM DATA
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const submitApplication = async () => {
     if (!formData.email || !formData.policyEmail) {
       setSuccess("Please fill all required email fields");
       setLoading(false);
       return;
     }
 
+    if (!/^\d{11}$/.test(formData.nin)) {
+      setSuccess("NIN must be exactly 11 digits");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidVIN(formData.chassisNumber)) {
+      setSuccess("Invalid chassis number (VIN must be 17 characters)");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidEngineNumber(formData.engineNumber)) {
+      setSuccess("Invalid engine number format");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
+     // 🔥 FREEZE DATA IMMEDIATELY
+  const snapshot = { ...formData };
+
+  console.log("LOCKED SNAPSHOT:", snapshot);
     
     const registrationNumber =
       `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`;
@@ -194,7 +334,7 @@ export default function SignupPage() {
       // ✅ CREATE POLICY (Strapi)
       const saved = await submitMotorInsurance({
         data: {
-          ...formData,
+          ...snapshot,
           policyType,
           premium,
           registrationNumber,
@@ -209,6 +349,7 @@ export default function SignupPage() {
       const registrationId = saved.data.id;
       const documentId = saved.data.documentId;
       const registration = saved.data;
+      setRegistrationId(saved.data.id);
 
       if (!registration?.documentId) {
         throw new Error("Missing documentId from Strapi response");
@@ -216,26 +357,34 @@ export default function SignupPage() {
 
       console.log("FORM DATA AFTER SUBMIT:", saved);
 
+      // Add this right before initializePaystackPayment
+      console.log("--- PAYSTACK DEBUG ---");
+      console.log("Cover Type:", formData.coverType);
+      const calculatedPremium = getPremium();
+      console.log("Calculated Premium from function:", calculatedPremium);
+      console.log("Current premium variable value:", premium);
+      console.log("Amount being sent to Paystack:", premium * 100);
+      console.log("----------------------");
       // ✅ PAYSTACK INIT
       initializePaystackPayment({
-        email: formData.email,
-        amount: premium * 100, // Paystack expects kobo
+        email: snapshot.email,
+        amount: premium, // Paystack expects kobo
         reference,
 
         metadata: {
           registrationId: registration.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.mobileNumber,
+          first_name: snapshot.firstName,
+          last_name: snapshot.lastName,
+          phone: snapshot.mobileNumber,
 
-          vehicle_make: formData.vehicleMake,
-          vehicle_model: formData.vehicleModel,
+          vehicle_make: snapshot.vehicleMake,
+          vehicle_model: snapshot.vehicleModel,
           vehicle_plate: registrationNumber,
 
-          class_of_insurance: formData.classOfInsurance,
-          cover_type: formData.coverType,
-          vehicle_use: formData.vehicleUse,
-          insurer: formData.preferredInsurer,
+          class_of_insurance: snapshot.classOfInsurance,
+          cover_type: snapshot.coverType,
+          vehicle_use: snapshot.vehicleUse,
+          insurer: snapshot.preferredInsurer,
 
           policy_type: policyType,
           custom_fields: [
@@ -247,38 +396,42 @@ export default function SignupPage() {
         },
 
         onSuccess: async (response) => {
-          const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
+          try {
 
-          if (!STRAPI_URL) {
-            throw new Error("STRAPI URL is not defined");
+            const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
+
+            if (!STRAPI_URL) {
+              throw new Error("STRAPI URL is not defined");
+            }
+
+            await fetch(
+              `${STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  data: {
+                    email: snapshot.email,
+                    policyEmail: snapshot.policyEmail,
+                    paymentStatus: "paid",
+                    paymentReference: response.reference,
+                    paymentDate: new Date().toISOString(),
+                  },
+                }),
+              }
+            );
+
+            // STEP PROGRESSION UI (SIMULATED BUT USEFUL UX)
+            // 🔥 START REAL-TIME TRACKING
+            setSuccess("Payment successful. Starting policy generation...");
+            setIsProcessing(true);
+            setProgress(10);
+            pollStatus(registration.documentId);
+
+          } catch (err) {
+            console.error(err);
+            setSuccess("Payment succeeded but processing tracking failed.");
           }
-          
-          const res = await fetch(
-                `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
-                {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    data: {
-                      email: formData.email,
-                      policyEmail: formData.policyEmail,
-
-                      paymentStatus: "paid",
-                      paymentReference: response.reference,
-                      paymentDate: new Date().toISOString(),
-                    },
-                  }),
-                }
-              );
-          const result = await res.json();
-          console.log("RESULT AFTER SUCESSFUL PAYMENT AND UPDATING PAYMENT DETAILS:", result);
-
-          if (!res.ok) {
-            console.log("🔥 STRAPI PUT ERROR:", JSON.stringify(result, null, 2));
-            throw new Error(result?.error?.message || "PUT failed");
-          }
-
-          setSuccess("Payment successful. Processing policy...");
         },
 
         onClose: () => {
@@ -290,6 +443,11 @@ export default function SignupPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+const handleSubmit = async (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
+      await submitApplication();
   };
 
   //INSURER 
@@ -326,6 +484,38 @@ export default function SignupPage() {
 
       loadInsurers();
     }, []);
+
+  //SOCKET LINKING
+  useEffect(() => {
+    if (!registrationId || !socket) return;
+
+    socket.emit("join-policy", registrationId);
+
+    const handleProgress = (data: any) => {
+      setIsProcessing(true);
+
+      if (data.progress !== undefined) {
+        setProgress(data.progress);
+      }
+
+      if (data.message) {
+        setSuccess(data.message);
+      }
+
+      if (data.stage === "completed") {
+        setTimeout(() => {
+          setIsProcessing(false);
+        }, 1500);
+      }
+    };
+
+    socket.on("policy-progress", handleProgress);
+
+    return () => {
+      socket.off("policy-progress", handleProgress);
+    };
+  }, [registrationId, socket]);
+
 
   return (
     <main className="min-h-screen bg-black text-white flex">
@@ -843,8 +1033,13 @@ export default function SignupPage() {
                           type="text"
                           name="chassisNumber"
                           value={formData.chassisNumber}
-                          onChange={handleChange}
-                          placeholder="Chassis Number"
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase();
+                            if (value.length <= 17) {
+                              setFormData({ ...formData, chassisNumber: value });
+                            }
+                          }}
+                          placeholder="17-character VIN"
                           className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                         />
 
@@ -852,8 +1047,13 @@ export default function SignupPage() {
                           type="text"
                           name="engineNumber"
                           value={formData.engineNumber}
-                          onChange={handleChange}
-                          placeholder="Engine Number"
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase();
+                            if (value.length <= 12) {
+                              setFormData({ ...formData, engineNumber: value });
+                            }
+                          }}
+                          placeholder="Engine Number (6–12 chars)"
                           className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                         />
 
@@ -945,8 +1145,15 @@ export default function SignupPage() {
                             type="text"
                             name="nin"
                             value={formData.nin}
-                            onChange={handleChange}
-                            placeholder="NIN"
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, ""); // digits only
+                              if (value.length <= 11) {
+                                setFormData({ ...formData, nin: value });
+                              }
+                            }}
+                            placeholder="11-digit NIN"
+                            maxLength={11}
+                            inputMode="numeric"
                             className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
@@ -1233,9 +1440,16 @@ export default function SignupPage() {
                   ) : (
                     <div />
                   )}
+
                   <button
-                    type={step === 4 ? "submit" : "button"}
-                    onClick={step < 4 ? nextStep : undefined}
+                    type="button"
+                    onClick={() => {
+                      if (step < 4) {
+                        nextStep();
+                      } else {
+                         submitApplication()// ONLY triggers payment here
+                      }
+                    }}
                     disabled={
                       loading ||
                       (step === 1 && !canProceedStep1) ||
@@ -1252,24 +1466,50 @@ export default function SignupPage() {
                           : "bg-[#0096c7] hover:bg-[#007aa8]"
                       }`}
                   >
-                    {step === 4
-                      ? loading
-                        ? "Submitting..."
-                        : "Proceed to Payment"
-                      : "Next"}
+                    {step === 4 ? "Proceed to Payment" : "Next"}
                   </button>
                 </div>
-
+                { /* PAYMENT MESSAGES */}      
                 {success && (
                   <p className="mt-6 text-green-500 font-medium">
                     {success}
                   </p>
                 )}
+                {/* STEP PROGRESS BAR UI */}
               </form>
             </div>
           </div>
         </div>
       </section>
+      {/* STEP PROGRESS BAR UI */}
+      {isProcessing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-500">
+          
+          <div className="flex flex-col items-center gap-6 animate-fadeIn">
+            
+            {/* Circular Progress */}
+            <CircularProgress progress={progress} />
+
+            {/* Text */}
+            <div className="text-center space-y-2">
+              <p className="text-white text-lg font-medium">
+                Processing Your Insurance
+              </p>
+
+              <p className="text-gray-300 text-sm animate-pulse">
+                {success || "Please wait..."}
+              </p>
+            </div>
+
+            {/* Optional subtle loader dots */}
+            <div className="flex gap-1">
+              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce" />
+              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-150" />
+              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-300" />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
