@@ -9,6 +9,9 @@ const policyWorker = new Worker(
     const { registrationId, policyNumber, certificateNumber } = job.data;
 
     // 1. Safe access to Strapi services at runtime
+    if (!global.strapi) {
+      throw new Error("Strapi instance not available in worker context");
+    }
     const processor = strapi.service("api::certificate-processor.processor");
 
     try {

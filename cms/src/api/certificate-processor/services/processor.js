@@ -51,6 +51,9 @@ async function updateProgress(registrationId, stage, percent, message, extra = {
 module.exports = {
   async run(registrationId, numbers) {
     try {
+
+      // Add this temporary log line right here:
+      strapi.log.info(`[DEBUG] Incoming numbers payload: ${JSON.stringify(numbers)}`);
       // =====================================================
       // STEP 1: FETCH REGISTRATION
       // =====================================================
@@ -164,7 +167,8 @@ module.exports = {
         await updateProgress(registrationId, "finalizing", 85, "NPF sync completed");
 
       } catch (npfError) {
-        strapi.log.error(`[Processor] NPF Sync Failed for RegID ${registrationId}:`, npfError.message);
+        // ✅ FIXED LOGGING: Single template literal strings display the real error message
+        strapi.log.error(`[Processor] NPF Sync Failed for RegID ${registrationId}: ${npfError.message || npfError}`);
         npfSyncStatus = "failed"; // Flag for manual/cron retry later
         
         await updateProgress(registrationId, "finalizing", 80, "NPF sync delayed, finalizing policy...");
@@ -178,7 +182,8 @@ module.exports = {
       let emailStatus = "pending";
 
       try {
-        const emailService = strapi.service("api::email.email");
+        // Change Step 6 inside processor.js to target your custom filename:
+        const emailService = strapi.service("api::email.certificate-email");
         await emailService.sendCertificate({
           registration,
           policyNumber,
@@ -187,7 +192,8 @@ module.exports = {
         });
         emailStatus = "success";
       } catch (emailError) {
-        strapi.log.error(`[Processor] Email Failed for RegID ${registrationId}:`, emailError.message);
+        // ✅ FIXED LOGGING: Single template literal strings display the real error message
+        strapi.log.error(`[Processor] Email Failed for RegID ${registrationId}: ${emailError.message || emailError}`);
         emailStatus = "failed";
       }
 

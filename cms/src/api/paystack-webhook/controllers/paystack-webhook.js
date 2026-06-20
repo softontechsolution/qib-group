@@ -5,10 +5,9 @@ const crypto = require("crypto");
 module.exports = {
   async handleWebhook(ctx) {
     try {
-
       console.log("========== WEBHOOK HIT ==========");
-
       console.log(ctx.request.body);
+
       // =====================================================
       // 1. EXTRACT RAW BODY FOR EXACT SIGNATURE MATCHING
       // =====================================================
@@ -18,15 +17,10 @@ module.exports = {
       // 2. STRICT SIGNATURE VALIDATION
       // =====================================================
       const signature = ctx.request.headers["x-paystack-signature"];
-
-      console.log(
-
-        ctx.request.headers["x-paystack-signature"]
-
-        );
+      console.log(ctx.request.headers["x-paystack-signature"]);
 
       if (!signature) {
-        ctx.log.warn("Paystack Webhook: Missing signature"); // Use Strapi's internal logger
+        strapi.log.warn("Paystack Webhook: Missing signature");
         return ctx.unauthorized("Missing signature");
       }
 
@@ -36,7 +30,7 @@ module.exports = {
         .digest("hex");
 
       if (hash !== signature) {
-        ctx.log.error("Paystack Webhook: Invalid signature detected");
+        strapi.log.error("Paystack Webhook: Invalid signature detected");
         return ctx.unauthorized("Invalid signature");
       }
 
@@ -55,7 +49,7 @@ module.exports = {
       const registrationId = data.metadata?.registrationId;
 
       if (!reference?.startsWith("INS-NPF-") || !registrationId) {
-        ctx.log.warn(`Invalid Paystack Payload: Ref: ${reference}, RegID: ${registrationId}`);
+        strapi.log.warn(`Invalid Paystack Payload: Ref: ${reference}, RegID: ${registrationId}`);
         return ctx.badRequest("Invalid reference or metadata");
       }
 
@@ -74,19 +68,26 @@ module.exports = {
 
       // Protect against duplicate webhooks (Idempotency)
       if (["paid", "processing", "completed"].includes(registration.flowStatus)) {
-        ctx.log.info(`Webhook ignored: Registration ${registrationId} already processed.`);
+        strapi.log.info(`Webhook ignored: Registration ${registrationId} already processed.`);
         return ctx.send({ success: true, message: "Already processed" });
       }
 
       // =====================================================
-      // 5. GENERATE POLICY NUMBERS
+      // 5. GENERATE POLICY NUMBERS (WITH DEFENSIVE UNWRAPPING)
       // =====================================================
       const counterService = strapi.service("api::system-counter.system-counter");
       const counterValue = await counterService.getNextCounter();
-      
-      const counter = String(counterValue).padStart(5, "0");
+
+      // Safely extract the raw number out of the Strapi object
+      let rawNumericValue = counterValue;
+      if (counterValue && typeof counterValue === "object") {
+        rawNumericValue = counterValue.value ?? counterValue.count ?? counterValue.next ?? counterValue.id ?? 1;
+      }
+
+      const counter = String(rawNumericValue || "1").padStart(5, "0");
       const year = new Date().getFullYear().toString().slice(-2);
 
+      // Reverted exactly to client specs: counter concatenates directly after 021
       const policyNumber = `NPF/EMPT/QIB/${year}/021${counter}`;
       const certificateNumber = `WAX${year}/021${counter}`;
 
@@ -107,26 +108,10 @@ module.exports = {
       });
 
       console.log("========== WEBHOOK ==========");
+      console.log(event.event);
+      console.log("REGISTRATION:", registrationId);
+      console.log("ADDING JOB TO QUEUE");
 
-        console.log(event.event);
-
-
-
-        console.log(
-
-        "REGISTRATION:",
-
-        registrationId
-
-        );
-
-
-
-        console.log(
-
-        "ADDING JOB TO QUEUE"
-
-        );
       // =====================================================
       // 7. DELEGATE HEAVY LIFTING TO QUEUE
       // =====================================================
@@ -138,7 +123,7 @@ module.exports = {
         certificateNumber,
       });
 
-      ctx.log.info(`Payment successful for RegID: ${registrationId}. Policy generation queued.`);
+      strapi.log.info(`Payment successful for RegID: ${registrationId}. Policy generation queued.`);
 
       // =====================================================
       // 8. ACKNOWLEDGE SUCCESS
@@ -150,7 +135,7 @@ module.exports = {
 
     } catch (error) {
       // Enterprise systems never leak stack traces to external services
-      ctx.log.error("PAYSTACK WEBHOOK ERROR:", error);
+      strapi.log.error("PAYSTACK WEBHOOK ERROR:", error);
       return ctx.internalServerError("Webhook processing failed");
     }
   },
