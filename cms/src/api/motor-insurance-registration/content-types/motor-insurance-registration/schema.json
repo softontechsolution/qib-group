@@ -193,7 +193,8 @@
         "generating_policy",
         "generating_certificate",
         "finalizing",
-        "completed"
+        "completed",
+        "failed"
       ]
     },
     "flowStatus": {
@@ -205,8 +206,30 @@
         "processing",
         "generating",
         "completed",
-        "emailed"
+        "emailed",
+        "failed"
       ]
+    },
+    "npfSyncStatus": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "success",
+        "failed"
+      ]
+    },
+    "npfSyncError": {
+      "type": "text"
+    },
+    "emailError": {
+      "type": "text"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "motor_insurance_registrations"
     }
   }
 }

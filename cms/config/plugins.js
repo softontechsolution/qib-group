@@ -5,16 +5,17 @@ module.exports = ({ env }) => ({
     config: {
       provider: 'nodemailer',
       providerOptions: {
-        host: env('SMTP_HOST', 'sandbox.smtp.mailtrap.io'),
-        port: env.int('SMTP_PORT', 2525),
+        host: env('SMTP_HOST', 'smtp.gmail.com'),
+        port: env.int('SMTP_PORT', 465),
+        secure: true, // Required for Gmail's port 465 (SSL)
         auth: {
           user: env('SMTP_USERNAME'),
           pass: env('SMTP_PASSWORD'),
         },
       },
       settings: {
-        defaultFrom: 'no-reply@qibinsurance.com',
-        defaultReplyTo: 'support@qibinsurance.com',
+        defaultFrom: env('DEFAULT_EMAIL_FROM', 'no-reply@qibinsurance.com'),
+        defaultReplyTo: env('DEFAULT_EMAIL_REPLY_TO', 'support@qibinsurance.com'),
       },
     },
   },

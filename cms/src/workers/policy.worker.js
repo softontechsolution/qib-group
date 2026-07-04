@@ -8,15 +8,32 @@ const policyWorker = new Worker(
   async (job) => {
     const { registrationId, policyNumber, certificateNumber } = job.data;
 
-    // 1. Safe access to Strapi services at runtime
-    if (!global.strapi) {
-      throw new Error("Strapi instance not available in worker context");
+    // 1. Explicitly pull from global context to prevent ReferenceErrors
+    let strapiInstance = global.strapi;
+    
+    // 🛡️ FIX: If Strapi is still booting up during a server restart, 
+    // wait for up to 10 seconds for the global instance to become ready.
+    if (!strapiInstance) {
+      for (let i = 0; i < 20; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        strapiInstance = global.strapi;
+        if (strapiInstance) break;
+      }
     }
-    const processor = strapi.service("api::certificate-processor.processor");
+    
+    if (!strapiInstance) {
+      throw new Error("Strapi instance not available in worker context yet");
+    }
+
+    const processor = strapiInstance.service("api::certificate-processor.processor");
 
     try {
-      // Log attempt number in case this is a retry
-      strapi.log.info(`[Job ${job.id}] Processing policy for Reg: ${registrationId} (Attempt: ${job.attemptsMade})`);
+      // Safe logging check
+      if (strapiInstance.log) {
+        strapiInstance.log.info(`[Job ${job.id}] Processing policy for Reg: ${registrationId} (Attempt: ${job.attemptsMade})`);
+      } else {
+        console.log(`[Job ${job.id}] Processing policy for Reg: ${registrationId} (Attempt: ${job.attemptsMade})`);
+      }
 
       // STEP 1: Notify frontend
       socket.emitProgress(registrationId, {
@@ -41,27 +58,51 @@ const policyWorker = new Worker(
       return { success: true, registrationId };
 
     } catch (error) {
-      // 🚨 ERROR HANDLING: Prevent frontend freeze
-      strapi.log.error(`[Job ${job.id}] Failed to process policy for Reg: ${registrationId} - ${error.message}`);
+      // Prevent frontend freeze on error
+      if (strapiInstance.log) {
+        strapiInstance.log.error(`[Job ${job.id}] Failed to process policy for Reg: ${registrationId} - ${error.message}`);
+      } else {
+        console.error(`[Job ${job.id}] Failed to process policy for Reg: ${registrationId} - ${error.message}`);
+      }
+
+      // 🛑 NEW: Update the database instantly so the frontend HTTP polling detects the failure
+      try {
+        const regRecord = await strapiInstance.db
+          .query("api::motor-insurance-registration.motor-insurance-registration")
+          .findOne({ where: { id: registrationId } });
+
+        if (regRecord && regRecord.documentId) {
+          await strapiInstance.documents("api::motor-insurance-registration.motor-insurance-registration").update({
+            documentId: regRecord.documentId,
+            status: "draft",
+            data: {
+              processingStage: "failed",
+              processingPercent: 0,
+              processingMessage: error.message,
+              flowStatus: "failed" // Triggers your frontend cancel/back option
+            }
+          });
+        }
+      } catch (dbUpdateError) {
+        console.error("Failed to write failure state to DB:", dbUpdateError.message);
+      }
 
       socket.emitProgress(registrationId, {
         stage: "failed",
-        progress: job.attemptsMade >= job.opts.attempts ? 0 : 10, // Drop to 0 if we are out of retries
+        progress: job.attemptsMade >= job.opts.attempts ? 0 : 10,
         message: "We encountered a delay. Retrying your policy generation...",
         error: error.message,
       });
 
-      // CRITICAL: We MUST throw the error again so BullMQ knows the job failed 
-      // and can trigger the automatic retry mechanism.
       throw error; 
     }
   },
   { 
     connection,
-    concurrency: 5, // Process up to 5 policies simultaneously
+    concurrency: 5,
     limiter: {
-      max: 10,      // Rate limiting: Don't exceed 10 jobs...
-      duration: 1000 // ...per second (protects NPF's API from being DDOSed by your server)
+      max: 10,
+      duration: 1000
     }
   }
 );
@@ -70,13 +111,13 @@ const policyWorker = new Worker(
 // WORKER OBSERVABILITY & LIFECYCLE
 // =====================================================
 
+// Using standard console logs here guarantees no lifecycle-level ReferenceErrors
 policyWorker.on("completed", (job) => {
-  strapi.log.info(`✅ [Job ${job.id}] Successfully generated policy for RegID: ${job.data.registrationId}`);
+  console.log(`✅ [Job ${job.id}] Successfully generated policy for RegID: ${job.data?.registrationId}`);
 });
 
 policyWorker.on("failed", (job, err) => {
-  // If it fails after all retries, you could trigger an email to the admin/dev team here
-  strapi.log.error(`❌ [Job ${job.id}] has permanently failed with error: ${err.message}`);
+  console.error(`❌ [Job ${job.id}] Worker Error - Job failed:`, err.message);
 });
 
 module.exports = policyWorker;

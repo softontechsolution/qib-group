@@ -71,6 +71,9 @@ export default function SignupPage() {
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);  
+  
+  // ✅ NEW STATE: Store the generated certificate URL
+  const [certificateUrl, setCertificateUrl] = useState<string | null>(null);
 
   const socket = useMemo(() => {
     return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:1337");
@@ -97,6 +100,11 @@ export default function SignupPage() {
             clearInterval(interval);
             setPolling(false);
             setSuccess("Policy generation complete. Certificate sent to email.");
+            
+            // ✅ CAPTURE CERTIFICATE URL DURING POLLING
+            if (data?.data?.certificateUrl) {
+              setCertificateUrl(data.data.certificateUrl);
+            }
           }
         } catch (err) {
           console.error("Polling error:", err);
@@ -324,7 +332,7 @@ export default function SignupPage() {
   console.log("LOCKED SNAPSHOT:", snapshot);
     
     const registrationNumber =
-      `${formData.plateFirst}-${formData.plateMiddle}-${formData.plateLast}`;
+      `${formData.plateFirst}-${formData.plateMiddle}${formData.plateLast}`;
 
     const premium = getPremium();
     const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}`;
@@ -403,23 +411,6 @@ export default function SignupPage() {
             if (!STRAPI_URL) {
               throw new Error("STRAPI URL is not defined");
             }
-
-            await fetch(
-              `${STRAPI_URL}/api/motor-insurance-registrations/${registration.documentId}`,
-              {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  data: {
-                    email: snapshot.email,
-                    policyEmail: snapshot.policyEmail,
-                    paymentStatus: "paid",
-                    paymentReference: response.reference,
-                    paymentDate: new Date().toISOString(),
-                  },
-                }),
-              }
-            );
 
             // STEP PROGRESSION UI (SIMULATED BUT USEFUL UX)
             // 🔥 START REAL-TIME TRACKING
@@ -501,12 +492,19 @@ const handleSubmit = async (e?: React.FormEvent) => {
       if (data.message) {
         setSuccess(data.message);
       }
-
-      if (data.stage === "completed") {
-        setTimeout(() => {
-          setIsProcessing(false);
-        }, 1500);
+      
+      // ✅ UPDATE STAGE SO UI KNOWS WHEN WE ARE DONE
+      if (data.stage) {
+        setProcessingStage(data.stage);
       }
+      
+      // ✅ CAPTURE URL FROM SOCKET
+      if (data.certificateUrl) {
+        setCertificateUrl(data.certificateUrl);
+      }
+
+      // ❌ DELETED: setTimeout(() => setIsProcessing(false), 1500)
+      // Reason: If we close isProcessing, the user can never click the download button!
     };
 
     socket.on("policy-progress", handleProgress);
@@ -940,7 +938,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                               name="vehicleLga"
                               value={formData.vehicleLga}
                               onChange={handleChange}
-                              disabled={!formData.state}
+                              disabled={!formData.vehicleState}
                               className="w-full p-4 bg-black border border-white/10 rounded-2xl disabled:opacity-50"
                             >
                               <option value="">Select LGA</option>
@@ -1338,7 +1336,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
                         <p>
                           <strong>Plate Number:</strong>{" "}
-                          {formData.plateFirst}
+                          {formData.plateFirst}-
                           {formData.plateMiddle}
                           {formData.plateLast}
                         </p>
@@ -1470,7 +1468,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                   </button>
                 </div>
                 { /* PAYMENT MESSAGES */}      
-                {success && (
+                {success && !isProcessing && (
                   <p className="mt-6 text-green-500 font-medium">
                     {success}
                   </p>
@@ -1481,33 +1479,78 @@ const handleSubmit = async (e?: React.FormEvent) => {
           </div>
         </div>
       </section>
-      {/* STEP PROGRESS BAR UI */}
+
+      {/* ✅ STEP PROGRESS BAR & SUCCESS UI */}
       {isProcessing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-500">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-500 p-4">
           
-          <div className="flex flex-col items-center gap-6 animate-fadeIn">
+          {processingStage === "completed" ? (
             
-            {/* Circular Progress */}
-            <CircularProgress progress={progress} />
-
-            {/* Text */}
-            <div className="text-center space-y-2">
-              <p className="text-white text-lg font-medium">
-                Processing Your Insurance
+            /* 🏆 NEW SUCCESS STATE UI */
+            <div className="flex flex-col items-center justify-center p-8 bg-gray-950 border border-white/10 rounded-2xl shadow-2xl max-w-md w-full mx-auto text-center animate-fadeIn">
+              <div className="w-20 h-20 bg-[#0096c7]/20 text-[#0096c7] rounded-full flex items-center justify-center mb-6">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              
+              <h2 className="text-2xl font-bold text-white mb-2">You're Fully Covered!</h2>
+              <p className="text-gray-400 mb-8 text-sm">
+                Your policy has been successfully generated. We have also created a secure account for you using your email. Please check your inbox for your temporary password.
               </p>
 
-              <p className="text-gray-300 text-sm animate-pulse">
-                {success || "Please wait..."}
-              </p>
+              <div className="flex flex-col w-full gap-4">
+                {/* Download Button */}
+                {certificateUrl && (
+                  <a 
+                    href={certificateUrl.startsWith('http') ? certificateUrl : `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'}${certificateUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-4 px-4 bg-[#0096c7] hover:bg-[#007aa8] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download Certificate
+                  </a>
+                )}
+
+                {/* Proceed to Login / Dashboard */}
+                <Link 
+                  href="/login"
+                  className="w-full py-4 px-4 bg-transparent border border-white/20 hover:bg-white/5 text-white font-semibold rounded-xl transition-colors"
+                >
+                  Go to My Vault
+                </Link>
+              </div>
             </div>
 
-            {/* Optional subtle loader dots */}
-            <div className="flex gap-1">
-              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce" />
-              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-150" />
-              <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-300" />
+          ) : (
+
+            /* ⏳ EXISTING LOADING STATE UI */
+            <div className="flex flex-col items-center gap-6 animate-fadeIn">
+              {/* Circular Progress */}
+              <CircularProgress progress={progress} />
+
+              {/* Text */}
+              <div className="text-center space-y-2">
+                <p className="text-white text-lg font-medium">
+                  Processing Your Insurance
+                </p>
+
+                <p className="text-gray-300 text-sm animate-pulse">
+                  {success || "Please wait..."}
+                </p>
+              </div>
+
+              {/* Optional subtle loader dots */}
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce" />
+                <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-150" />
+                <span className="w-2 h-2 bg-[#0096c7] rounded-full animate-bounce delay-300" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </main>

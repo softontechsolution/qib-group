@@ -91,4 +91,36 @@ module.exports = {
       throw error;
     }
   },
+  async sendWelcomeEmail({ email, firstName, tempPassword, loginUrl }) {
+    try {
+      await strapi.plugin("email").service("email").send({
+        to: email,
+        from: process.env.DEFAULT_FROM_EMAIL || "no-reply@yourdomain.com",
+        subject: "Welcome to your Insurance Vault! 🔐",
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+            <h2>Welcome, ${firstName}!</h2>
+            <p>Your motor insurance policy has been successfully generated.</p>
+            <p>To make it easy for you to access, download, and manage your certificates at any time, we have automatically created a secure <strong>Customer Vault</strong> for you.</p>
+            
+            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0 0 10px 0;"><strong>Your Login Credentials:</strong></p>
+              <p style="margin: 0 0 5px 0;"><strong>Email:</strong> ${email}</p>
+              <p style="margin: 0;"><strong>Temporary Password:</strong> <span style="font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">${tempPassword}</span></p>
+            </div>
+
+            <a href="${loginUrl}" style="display: inline-block; background-color: #2563eb; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-bottom: 20px;">
+              Log in to your Vault
+            </a>
+
+            <p style="font-size: 14px; color: #666;"><em>Note: For your security, please change your password immediately after logging in.</em></p>
+          </div>
+        `,
+      });
+      strapi.log.info(`[Email Service] Welcome email sent to ${email}`);
+    } catch (error) {
+      strapi.log.error(`[Email Service] Failed to send welcome email to ${email}: ${error.message}`);
+      throw error;
+    }
+  },
 };

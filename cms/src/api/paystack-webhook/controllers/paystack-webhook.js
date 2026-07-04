@@ -94,8 +94,8 @@ module.exports = {
       // =====================================================
       // 6. ATOMIC-STYLE STATE UPDATE
       // =====================================================
-      await strapi.db.query("api::motor-insurance-registration.motor-insurance-registration").update({
-        where: { id: registrationId },
+     await strapi.documents("api::motor-insurance-registration.motor-insurance-registration").update({
+        documentId: registration.documentId,
         data: {
           paymentStatus: "paid",
           paymentReference: reference,
@@ -119,6 +119,7 @@ module.exports = {
 
       await queue.add("generate-policy", {
         registrationId,
+        documentId: registration.documentId,
         policyNumber,
         certificateNumber,
       });

@@ -20,6 +20,13 @@ module.exports = {
     // ⏳ Give Strapi 2 seconds to fully open the database and settle down before starting workers
     setTimeout(() => {
       strapi.log.info("🚀 Strapi is fully stable. Booting background workers...");
+      
+      // 1. THE FIX: Attach strapi to the global Node context
+      // This allows your unmodified worker file to access 'strapi' magically
+      global.strapi = strapi;
+      
+      // 2. Boot the worker exactly as you originally had it.
+      // No wrappers, no functions, no TypeScript callable errors.
       require("./workers/policy.worker");
     }, 2000);
   },
