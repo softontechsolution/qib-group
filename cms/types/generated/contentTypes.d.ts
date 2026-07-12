@@ -657,6 +657,38 @@ export interface ApiClaimClaim extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCommissionCommission extends Struct.CollectionTypeSchema {
+  collectionName: 'commissions';
+  info: {
+    displayName: 'Commission';
+    pluralName: 'commissions';
+    singularName: 'commission';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    agentId: Schema.Attribute.String;
+    amount: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::commission.commission'
+    > &
+      Schema.Attribute.Private;
+    payoutStatus: Schema.Attribute.Enumeration<['pending', 'settled']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    policyNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactContact extends Struct.CollectionTypeSchema {
   collectionName: 'contacts';
   info: {
@@ -1014,6 +1046,7 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
   };
   attributes: {
     address: Schema.Attribute.Text;
+    agentId: Schema.Attribute.String;
     certificateNumber: Schema.Attribute.String;
     certificateUrl: Schema.Attribute.String;
     chassisNumber: Schema.Attribute.String;
@@ -1773,7 +1806,11 @@ export interface PluginUsersPermissionsUser
     draftAndPublish: false;
   };
   attributes: {
+    agentId: Schema.Attribute.String & Schema.Attribute.Unique;
+    agentType: Schema.Attribute.Enumeration<['agent', 'broker']>;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    commissionBalance: Schema.Attribute.BigInteger &
+      Schema.Attribute.DefaultTo<'0'>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1785,6 +1822,7 @@ export interface PluginUsersPermissionsUser
         minLength: 6;
       }>;
     firstName: Schema.Attribute.String;
+    isAgent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     lastName: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1840,6 +1878,7 @@ declare module '@strapi/strapi' {
       'api::ceo-profile.ceo-profile': ApiCeoProfileCeoProfile;
       'api::certificate-template.certificate-template': ApiCertificateTemplateCertificateTemplate;
       'api::claim.claim': ApiClaimClaim;
+      'api::commission.commission': ApiCommissionCommission;
       'api::contact.contact': ApiContactContact;
       'api::hero-slide.hero-slide': ApiHeroSlideHeroSlide;
       'api::homepage.homepage': ApiHomepageHomepage;

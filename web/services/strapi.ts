@@ -168,6 +168,7 @@ export async function submitMotorInsurance(payload: Record<string, unknown>) {
     // status
     paymentStatus: "pending",
     policyStatus: "draft",
+    agentId: d.agentId ?? null,
   };
 
   console.log("FINAL CLEAN DATA:", cleanData);

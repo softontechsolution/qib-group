@@ -48,6 +48,8 @@ export const authOptions: NextAuthOptions = {
             name: data.user.firstName || data.user.fullName,
             email: data.user.email,
             jwt: data.jwt, // Stash the JWT token here
+            isAgent: data.user.isAgent || false,
+            agentId: data.user.agentId || null,
           };
         } catch (error) {
           console.error("Network runtime failure during authorization:", error);
@@ -63,6 +65,8 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.jwt = (user as any).jwt; // Inject the Strapi JWT into the encrypted cookie
+        token.isAgent = (user as any).isAgent;
+        token.agentId = (user as any).agentId;
       }
       return token;
     },
@@ -72,6 +76,8 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         (session as any).id = token.id;
         (session as any).jwt = token.jwt; // Now client components can make authenticated requests to Strapi!
+        (session as any).user.isAgent = token.isAgent;
+        (session as any).user.agentId = token.agentId;
       }
       return session;
     },

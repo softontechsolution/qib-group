@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { AgentCommissionsSection } from "@/components/AgentCommissionsSection";
 import { getUserPolicies, getUserClaims } from "@/services/strapi";
 
 // =====================================================
@@ -143,12 +144,21 @@ export default function UserVaultPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mt-1">Welcome back, {currentUser.fullName}</h1>
             <p className="text-sm text-gray-500 mt-0.5">Manage your policies, track claims, and access premium insurance assets.</p>
           </div>
-          <button 
-            onClick={() => router.push("/lodge-claim")}
-            className="inline-flex justify-center items-center px-5 py-3 bg-[#0096c7] hover:bg-black text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-sky-50 text-center"
-          >
-            ➕ Lodge New Claim
-          </button>
+          {/* ACTION BUTTON GROUP */}
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center shrink-0 w-full md:w-auto">
+            <button 
+              onClick={() => router.push("/buy-insurance")}
+              className="inline-flex justify-center items-center px-5 py-3 border-2 border-[#0096c7] text-[#0096c7] hover:bg-sky-50 text-sm font-bold rounded-xl transition-all text-center"
+            >
+              🛡️ Buy New Policy
+            </button>
+            <button 
+              onClick={() => router.push("/lodge-claim")}
+              className="inline-flex justify-center items-center px-5 py-3 bg-[#0096c7] hover:bg-black text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-sky-50 text-center"
+            >
+              ➕ Lodge New Claim
+            </button>
+          </div>
         </div>
 
         {/* VAULT CONTROL TABS */}
@@ -215,6 +225,10 @@ export default function UserVaultPage() {
                     </button>
                   </div>
                 </div>
+                {/* 3. THE AGENT GATEGUARD DETECTOR 👇 */}
+                {session?.user && (session as any).user.isAgent && (
+                  <AgentCommissionsSection agentId={(session as any).user.agentId} />
+                )}
               </div>
             )}
 

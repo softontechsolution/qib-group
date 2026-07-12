@@ -230,6 +230,9 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "motor_insurance_registrations"
+    },
+    "agentId": {
+      "type": "string"
     }
   }
 }

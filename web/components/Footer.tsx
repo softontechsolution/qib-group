@@ -35,6 +35,7 @@ export default function Footer() {
             <li><Link href="/lodge-claim" className="hover:text-white transition-colors">Lodge a Claim</Link></li>
             <li><Link href="/news" className="hover:text-white transition-colors">News</Link></li>
             <li><Link href="/vault" className="hover:text-white transition-colors">My Profile</Link></li>
+            <li><Link href="/register-agent" className="hover:text-white transition-colors">Register as Agent/Broker</Link></li>
           </ul>
         </div>
 
@@ -54,6 +55,8 @@ export default function Footer() {
           <ul className="space-y-2 text-gray-400">
             <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
           </ul>
         </div>

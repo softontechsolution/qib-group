@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -59,6 +60,7 @@ const isValidEngineNumber = (num: string) => {
 };
 
 export default function SignupPage() {
+  const { data: session } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -337,6 +339,11 @@ export default function SignupPage() {
     const premium = getPremium();
     const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}`;
 
+    // 👈 DETERMINISTIC AGENT ROUTING: Evaluates if checkout is executed by an agent profile
+    const activeAgentId = session?.user && (session as any).user.isAgent 
+      ? (session as any).user.agentId 
+      : null;
+
     console.log("FORM DATA BEFORE SUBMIT:", formData);
     try {
       // ✅ CREATE POLICY (Strapi)
@@ -346,6 +353,7 @@ export default function SignupPage() {
           policyType,
           premium,
           registrationNumber,
+          agentId: activeAgentId,
 
           paymentStatus: "pending",
           policyStatus: "draft",
@@ -600,22 +608,42 @@ const handleSubmit = async (e?: React.FormEvent) => {
                 className="object-contain"
               />
 
-              <Link
-                href="/login"
-                className="px-5 py-2 border border-[#0096c7] text-[#0096c7] rounded-xl"
-              >
-                Login
-              </Link>
+              {/* 👇 Swap out dynamically based on state */}
+              {!session ? (
+                <Link 
+                  href="/login" 
+                  className="rounded-lg bg-[#0096c7] px-4 py-2 text-sm font-medium text-white"
+                >
+                  Login
+                </Link>
+              ) : (
+                <Link 
+                  href="/vault" 
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Go to Vault
+                </Link>
+              )}
             </div>
           </div>
 
           <div className="hidden md:flex justify-end">
-            <Link
-              href="/login"
-              className="px-6 py-3 border border-[#0096c7] text-[#0096c7] rounded-xl hover:bg-[#0096c7] hover:text-white transition"
-            >
-              Login
-            </Link>
+            {/* 👇 Swap out dynamically based on state */}
+              {!session ? (
+                <Link 
+                  href="/login" 
+                  className="rounded-lg bg-[#0096c7] px-4 py-2 text-sm font-medium text-white"
+                >
+                  Login
+                </Link>
+              ) : (
+                <Link 
+                  href="/vault" 
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Go to Vault
+                </Link>
+              )}
           </div>
         </div>
 

@@ -83,6 +83,25 @@
     },
     "phoneNumber": {
       "type": "string"
+    },
+    "isAgent": {
+      "type": "boolean",
+      "default": false
+    },
+    "agentId": {
+      "type": "string",
+      "unique": true
+    },
+    "agentType": {
+      "type": "enumeration",
+      "enum": [
+        "agent",
+        "broker"
+      ]
+    },
+    "commissionBalance": {
+      "type": "biginteger",
+      "default": "0"
     }
   }
 }

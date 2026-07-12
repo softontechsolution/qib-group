@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react"; // 👈 Added useSession here
 import { getLoginPage, getLoginSlides } from "@/services/strapi";
 
 interface StrapiImage {
@@ -58,6 +58,7 @@ interface Slide {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession(); // 👈 Added to capture authentication states
   const [current, setCurrent] = useState(0);
   const [page, setPage] = useState<PageData | null>(null);
   const [slides, setSlides] = useState<Slide[]>([]);
@@ -67,6 +68,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+
+  // 1. Redirection route protection mechanism
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/vault"); // 👈 Uses non-stacking replace to safely offload auth traffic
+    }
+  }, [status, router]);
 
   useEffect(() => {
     getLoginPage().then(setPage);
@@ -119,7 +127,14 @@ export default function LoginPage() {
     }
   };
 
-  if (!page) return null;
+  // 🛡️ Comprehensive Performance Guard: Stops rendering layout artifacts while establishing profile state
+  if (status === "loading" || status === "authenticated" || !page) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black text-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0096c7]" />
+      </div>
+    );
+  }
 
   const logoUrl =
     page.logo?.url
