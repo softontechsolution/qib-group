@@ -210,3 +210,28 @@ export const getInsurers = async () => {
   const res = await API.get("/insurers?populate=*");
   return res.data.data;
 };
+
+/**
+ * Submits a claims package containing text meta-data and file binaries to Strapi
+ * @param formData - Prepared multipart/form-data container
+ */
+export const submitClaim = async (formData: FormData) => {
+  const res = await API.post("/claims", formData);
+  return res.data;
+};
+
+/**
+ * Fetches all motor insurance registrations linked to a specific user ID
+ */
+export const getUserPolicies = async (userId: string | number) => {
+  const res = await API.get(`/motor-insurance-registrations?filters[user][id][$eq]=${userId}&populate=*`);
+  return res.data.data;
+};
+
+/**
+ * Fetches all claims lodged by a specific user ID
+ */
+export const getUserClaims = async (userId: string | number) => {
+  const res = await API.get(`/claims?filters[user][id][$eq]=${userId}&populate=*`);
+  return res.data.data;
+};

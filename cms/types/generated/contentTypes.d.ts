@@ -618,6 +618,45 @@ export interface ApiCertificateTemplateCertificateTemplate
   };
 }
 
+export interface ApiClaimClaim extends Struct.CollectionTypeSchema {
+  collectionName: 'claims';
+  info: {
+    displayName: 'Claim';
+    pluralName: 'claims';
+    singularName: 'claim';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    claimForm: Schema.Attribute.Media<'images' | 'files'>;
+    claimStatus: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'approved', 'declined']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    coverType: Schema.Attribute.Enumeration<
+      ['Comprehensive', 'Third Party Only', 'Third Party Fire & Theft']
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.String;
+    evidence: Schema.Attribute.Media<'images' | 'videos', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::claim.claim'> &
+      Schema.Attribute.Private;
+    policyNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiContactContact extends Struct.CollectionTypeSchema {
   collectionName: 'contacts';
   info: {
@@ -1800,6 +1839,7 @@ declare module '@strapi/strapi' {
       'api::business.business': ApiBusinessBusiness;
       'api::ceo-profile.ceo-profile': ApiCeoProfileCeoProfile;
       'api::certificate-template.certificate-template': ApiCertificateTemplateCertificateTemplate;
+      'api::claim.claim': ApiClaimClaim;
       'api::contact.contact': ApiContactContact;
       'api::hero-slide.hero-slide': ApiHeroSlideHeroSlide;
       'api::homepage.homepage': ApiHomepageHomepage;
