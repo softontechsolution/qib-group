@@ -237,7 +237,7 @@ module.exports = {
           const tempPassword = crypto.randomBytes(6).toString("hex");
 
           // 4. Create the User with Custom Fields
-          const newUser = await strapi.entityService.create("plugin::users-permissions.user", {
+          const newUser = await strapi.db.query('plugin::users-permissions.user').create({
             data: {
               username: registration.email,
               email: registration.email,
@@ -249,7 +249,11 @@ module.exports = {
               // that we fetched from the database in Step 1.
               firstName: registration.policyHolderFirstName,
               lastName: registration.policyHolderLastName,
-              phoneNumber: registration.mobileNumber
+              phoneNumber: registration.mobileNumber,
+              agentType: "none",
+              agentId: '',
+              isAgent: false,
+              commissionBalance: 0,
             }
           });
           

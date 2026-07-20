@@ -8,14 +8,17 @@ import Image from "next/image";
 export default function RegisterAgentPage() {
   const router = useRouter();
   
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    username: "",
-    phoneNumber: "",
-    agentType: "agent",
-    password: "",
-  });
+  // 1. Update the initial state
+const [formData, setFormData] = useState({
+  firstName: "",
+  lastName: "",
+  middleName: "", // Optional
+  email: "",
+  username: "",
+  phoneNumber: "",
+  agentType: "agent",
+  password: "",
+});
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,35 +41,53 @@ export default function RegisterAgentPage() {
     setError("");
 
     const uniqueAgentId = generateAgentId();
+    const cleanEmail = formData.email.trim().toLowerCase();
+    const cleanUsername = formData.username.trim().toLowerCase();
+
+    console.log(`[Agent Registration] Initiating process for: ${cleanEmail}`);
+    console.log(`[Agent Registration] Generated Agent ID: ${uniqueAgentId}`);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local/register`, {
+      const payload = {
+        username: cleanUsername,
+        email: cleanEmail,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        middleName: formData.middleName,
+        phoneNumber: formData.phoneNumber,
+        agentType: formData.agentType,
+        agentId: uniqueAgentId,
+      };
+
+      console.log(`[Agent Registration] Sending payload to custom Strapi backend...`, {
+        ...payload, 
+        password: "[REDACTED]" // Keeps the password out of your console logs for security
+      });
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/agent/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username.trim().toLowerCase(),
-          email: formData.email.trim().toLowerCase(),
-          password: formData.password,
-          // Custom fields injected directly into the Strapi User table configuration:
-          fullName: formData.fullName,
-          phoneNumber: formData.phoneNumber,
-          agentType: formData.agentType,
-          agentId: uniqueAgentId,
-          isAgent: true,
-          commissionBalance: 0,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
+      console.log(`[Agent Registration] Server Response Status: ${res.status}`);
 
       if (!res.ok) {
-        throw new Error(data?.error?.message || "Registration failed. Please check details.");
+        console.error(`[Agent Registration] Server rejected request:`, data);
+        // Extracts the error message sent from our custom backend controller
+        throw new Error(data?.error?.message || data?.message || "Registration failed. Please check your details.");
       }
 
+      console.log(`[Agent Registration] Success! Backend confirmed creation and email dispatch.`);
       setSuccessId(uniqueAgentId);
+
     } catch (err: any) {
+      console.error(`[Agent Registration] FATAL ERROR Caught:`, err);
       setError(err.message || "An unexpected error occurred.");
     } finally {
+      console.log(`[Agent Registration] Execution finished. Clearing loading state.`);
       setIsLoading(false);
     }
   };
@@ -121,11 +142,20 @@ export default function RegisterAgentPage() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Full Corporate Name</label>
-                <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none" placeholder="John Doe or Partners Ltd" />
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">First Name</label>
+                  <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Last Name</label>
+                  <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none" />
+                </div>
               </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Middle Name</label>
+                  <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none" />
+                </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Desired Username</label>
                 <input type="text" name="username" required value={formData.username} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none" placeholder="johndoebroker" />
@@ -147,8 +177,8 @@ export default function RegisterAgentPage() {
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Intermediary Classification</label>
               <select name="agentType" value={formData.agentType} onChange={handleChange} className="mt-1 block w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0096c7] outline-none font-medium">
-                <option value="agent">Independent Field Agent (Retail Sales)</option>
-                <option value="broker">Certified Corporate Broker (Commercial Accounts)</option>
+                <option value="agent">Independent Sales Rep (Retail Sales)</option>
+                <option value="broker">Certified Corporate Rep (Commercial Accounts)</option>
               </select>
             </div>
 

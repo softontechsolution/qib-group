@@ -94,9 +94,11 @@
     },
     "agentType": {
       "type": "enumeration",
+      "default": "none",
       "enum": [
         "agent",
-        "broker"
+        "broker",
+        "none"
       ]
     },
     "commissionBalance": {

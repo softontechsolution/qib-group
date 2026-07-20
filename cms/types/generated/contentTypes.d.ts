@@ -1807,7 +1807,8 @@ export interface PluginUsersPermissionsUser
   };
   attributes: {
     agentId: Schema.Attribute.String & Schema.Attribute.Unique;
-    agentType: Schema.Attribute.Enumeration<['agent', 'broker']>;
+    agentType: Schema.Attribute.Enumeration<['agent', 'broker', 'none']> &
+      Schema.Attribute.DefaultTo<'none'>;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     commissionBalance: Schema.Attribute.BigInteger &
       Schema.Attribute.DefaultTo<'0'>;
