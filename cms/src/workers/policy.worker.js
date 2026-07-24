@@ -2,13 +2,14 @@ const { Worker } = require("bullmq");
 const connection = require("../lib/redis");
 const socket = require("../realtime/socket");
 
+// 1. Import external email template
+const policyRenewalTemplate = require("../templates/emails/policyRenewal");
+
 // Create the worker with enterprise configuration
 const policyWorker = new Worker(
   "policy-processing",
   async (job) => {
-    const { registrationId, policyNumber, certificateNumber } = job.data;
-
-    // 1. Explicitly pull from global context to prevent ReferenceErrors
+    // Explicitly pull from global context to prevent ReferenceErrors
     let strapiInstance = global.strapi;
     
     // 🛡️ FIX: If Strapi is still booting up during a server restart, 
@@ -25,6 +26,49 @@ const policyWorker = new Worker(
       throw new Error("Strapi instance not available in worker context yet");
     }
 
+    // =====================================================
+    // JOB HANDLER 1: POLICY RENEWAL EMAIL NOTIFICATIONS
+    // =====================================================
+    if (job.name === "send-renewal-notification") {
+      const { email, policyNumber, expiryDate } = job.data;
+
+      try {
+        if (strapiInstance.log) {
+          strapiInstance.log.info(`[Job ${job.id}] Processing renewal notification for ${email} (Policy: ${policyNumber})`);
+        } else {
+          console.log(`[Job ${job.id}] Processing renewal notification for ${email} (Policy: ${policyNumber})`);
+        }
+
+        // Generate email HTML body using external template
+        const emailHtml = policyRenewalTemplate({ policyNumber, expiryDate });
+
+        // Dispatch email via Strapi Email Plugin
+        await strapiInstance.plugin("email").service("email").send({
+          to: email,
+          subject: `Action Required: Your Policy (${policyNumber}) is Expiring Soon`,
+          html: emailHtml,
+        });
+
+        if (strapiInstance.log) {
+          strapiInstance.log.info(`[Job ${job.id}] Renewal reminder email sent successfully to ${email}`);
+        }
+
+        return { success: true, email, policyNumber };
+
+      } catch (renewalError) {
+        if (strapiInstance.log) {
+          strapiInstance.log.error(`[Job ${job.id}] Failed to send renewal email to ${email} - ${renewalError.message}`);
+        } else {
+          console.error(`[Job ${job.id}] Failed to send renewal email to ${email} - ${renewalError.message}`);
+        }
+        throw renewalError;
+      }
+    }
+
+    // =====================================================
+    // JOB HANDLER 2: STANDARD POLICY GENERATION (EXISTING FLOW)
+    // =====================================================
+    const { registrationId, policyNumber, certificateNumber } = job.data;
     const processor = strapiInstance.service("api::certificate-processor.processor");
 
     try {
@@ -113,7 +157,7 @@ const policyWorker = new Worker(
 
 // Using standard console logs here guarantees no lifecycle-level ReferenceErrors
 policyWorker.on("completed", (job) => {
-  console.log(`✅ [Job ${job.id}] Successfully generated policy for RegID: ${job.data?.registrationId}`);
+  console.log(`✅ [Job ${job.id}] Successfully processed job (${job.name}) for ID: ${job.data?.registrationId || job.data?.policyNumber}`);
 });
 
 policyWorker.on("failed", (job, err) => {
