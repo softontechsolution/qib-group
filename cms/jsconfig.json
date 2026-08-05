@@ -1,8 +1,19 @@
 {
   "compilerOptions": {
-    "moduleResolution": "nodenext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "target": "ES2021",
     "checkJs": true,
-    "allowJs": true
-  }
+    "allowJs": true,
+    "strict": false,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
+  },
+  "exclude": [
+    "node_modules",
+    ".strapi",
+    "build",
+    "dist"
+  ]
 }

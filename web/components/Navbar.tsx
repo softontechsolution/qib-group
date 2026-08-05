@@ -6,10 +6,12 @@ import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar({ showLogin = false }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { status } = useSession();
 
   const links = [
     { name: "About Us", href: "/about" },
@@ -61,22 +63,31 @@ export default function Navbar({ showLogin = false }) {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
-          {showLogin && (
-            <>
-              <Link
-                href="/login"
-                className="px-5 py-2 border border-[#0096c7] text-[#0096c7] rounded-xl hover:bg-[#0096c7] hover:text-white transition"
-              >
-                Login
-              </Link>
+          {status === "authenticated" && (
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="px-5 py-2 border border-red-500 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition font-medium text-sm"
+            >
+              Logout
+            </button>
+          )}
 
-              <Link
-                href="/buy-insurance"
-                className="px-5 py-2 bg-[#0096c7] text-white rounded-xl hover:scale-105 transition"
-              >
-                Buy Insurance
-              </Link>
-            </>
+          {status !== "authenticated" && showLogin && (
+            <Link
+              href="/login"
+              className="px-5 py-2 border border-[#0096c7] text-[#0096c7] rounded-xl hover:bg-[#0096c7] hover:text-white transition text-sm font-medium"
+            >
+              Login
+            </Link>
+          )}
+
+          {showLogin && (
+            <Link
+              href="/buy-insurance"
+              className="px-5 py-2 bg-[#0096c7] text-white rounded-xl hover:scale-105 transition text-sm font-medium"
+            >
+              Buy Insurance
+            </Link>
           )}
         </div>
 
@@ -110,25 +121,39 @@ export default function Navbar({ showLogin = false }) {
             </Link>
           ))}
 
-          {showLogin && (
-            <div className="space-y-3">
+          <div className="space-y-3">
+            {status === "authenticated" && (
+              <button
+                onClick={() => {
+                  setMobileOpen(false);
+                  signOut({ callbackUrl: "/login" });
+                }}
+                className="block w-full text-center py-3 border border-red-500 text-red-500 rounded-xl font-medium"
+              >
+                Logout
+              </button>
+            )}
+
+            {status !== "authenticated" && showLogin && (
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="block text-center py-3 border border-[#0096c7] text-[#0096c7] rounded-xl"
+                className="block text-center py-3 border border-[#0096c7] text-[#0096c7] rounded-xl font-medium"
               >
                 Login
               </Link>
+            )}
 
+            {showLogin && (
               <Link
                 href="/buy-insurance"
                 onClick={() => setMobileOpen(false)}
-                className="block text-center py-3 bg-[#0096c7] text-white rounded-xl"
+                className="block text-center py-3 bg-[#0096c7] text-white rounded-xl font-medium"
               >
                 Buy Motor Vehicle Insurance
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </motion.div>
       )}
     </header>

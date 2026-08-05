@@ -1,3 +1,9 @@
+## 6.20.2 (2026-05-06)
+
+### Bug fixes
+
+Fix an issue where you couldn't move to the last page of completions when its count was a precise multiple of the page size.
+
 ## 6.20.1 (2026-03-02)
 
 ### Bug fixes

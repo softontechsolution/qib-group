@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link"; // 1. Imported for fast routing
 
 export default function Footer() {
   return (
@@ -26,10 +27,16 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold mb-4">Quick Links</h4>
           <ul className="space-y-2 text-gray-400">
-            <li><a href="#">About</a></li>
-            <li><a href="#">Businesses</a></li>
-            <li><a href="#">Projects</a></li>
-            <li><a href="#">News</a></li>
+            <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+            <li><Link href="/businesses" className="hover:text-white transition-colors">Businesses</Link></li>
+            <li><Link href="/projects" className="hover:text-white transition-colors">Projects</Link></li>
+            <li><Link href="/QUALITY INSURANCE BROKERS LTD CLAIMS HANDLING PROCEDURE.pdf" className="hover:text-white transition-colors">Claim Procedure</Link></li>
+            {/* 2. Linked to your new lodge-claim routing directory */}
+            <li><Link href="/lodge-claim" className="hover:text-white transition-colors">Lodge a Claim</Link></li>
+            <li><Link href="/news" className="hover:text-white transition-colors">News</Link></li>
+            <li><Link href="/vault" className="hover:text-white transition-colors">My Profile</Link></li>
+            <li><Link href="/register-agent" className="hover:text-white transition-colors">Register as Sales Rep</Link></li>
+            <li><Link href="https://www.askniid.org/" className="hover:text-white transition-colors">Check Your Policy on NIID</Link></li>
           </ul>
         </div>
 
@@ -47,9 +54,11 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold mb-4">Follow Us</h4>
           <ul className="space-y-2 text-gray-400">
-            <li><a href="#">LinkedIn</a></li>
-            <li><a href="#">Twitter</a></li>
-            <li><a href="#">Instagram</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">LinkedIn</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Facebook</a></li>
+            <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
           </ul>
         </div>
       </div>

@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "insurers",
+  "info": {
+    "singularName": "insurer",
+    "pluralName": "insurers",
+    "displayName": "insurer"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name"
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "isActive": {
+      "type": "boolean",
+      "default": true
+    },
+    "priority": {
+      "type": "integer"
+    }
+  }
+}

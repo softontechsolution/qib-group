@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "system_counters",
+  "info": {
+    "singularName": "system-counter",
+    "pluralName": "system-counters",
+    "displayName": "system-counter"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "default": "POLICY"
+    },
+    "value": {
+      "type": "integer",
+      "default": 20
+    },
+    "prefix": {
+      "type": "string",
+      "default": "NPF/EMPT/QIB/26/021"
+    },
+    "certificatePrefix": {
+      "type": "string",
+      "default": "WAX26/021"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthProvider } from "./providers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -31,9 +32,12 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body suppressHydrationWarning className="min-h-full bg-white text-black selection:bg-[#0096c7]/30 selection:text-[#0096c7]">
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <AuthProvider>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </AuthProvider>
+        <script src="https://js.paystack.co/v1/inline.js"></script>
       </body>
     </html>
   );

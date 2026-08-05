@@ -585,6 +585,110 @@ export interface ApiCeoProfileCeoProfile extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiCertificateTemplateCertificateTemplate
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'certificate_templates';
+  info: {
+    displayName: 'certificate-template';
+    pluralName: 'certificate-templates';
+    singularName: 'certificate-template';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    background: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::certificate-template.certificate-template'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiClaimClaim extends Struct.CollectionTypeSchema {
+  collectionName: 'claims';
+  info: {
+    displayName: 'Claim';
+    pluralName: 'claims';
+    singularName: 'claim';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    claimForm: Schema.Attribute.Media<'images' | 'files'>;
+    claimStatus: Schema.Attribute.Enumeration<
+      ['pending', 'processing', 'approved', 'declined']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    coverType: Schema.Attribute.Enumeration<
+      ['Comprehensive', 'Third Party Only', 'Third Party Fire & Theft']
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.String;
+    evidence: Schema.Attribute.Media<'images' | 'videos', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::claim.claim'> &
+      Schema.Attribute.Private;
+    policyNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiCommissionCommission extends Struct.CollectionTypeSchema {
+  collectionName: 'commissions';
+  info: {
+    displayName: 'Commission';
+    pluralName: 'commissions';
+    singularName: 'commission';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    agentId: Schema.Attribute.String;
+    amount: Schema.Attribute.Decimal;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::commission.commission'
+    > &
+      Schema.Attribute.Private;
+    payoutStatus: Schema.Attribute.Enumeration<['pending', 'settled']> &
+      Schema.Attribute.DefaultTo<'pending'>;
+    policyNumber: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiContactContact extends Struct.CollectionTypeSchema {
   collectionName: 'contacts';
   info: {
@@ -836,6 +940,38 @@ export interface ApiInsuranceSlideInsuranceSlide
   };
 }
 
+export interface ApiInsurerInsurer extends Struct.CollectionTypeSchema {
+  collectionName: 'insurers';
+  info: {
+    displayName: 'insurer';
+    pluralName: 'insurers';
+    singularName: 'insurer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    isActive: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::insurer.insurer'
+    > &
+      Schema.Attribute.Private;
+    logo: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    name: Schema.Attribute.String;
+    priority: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'name'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiLoginPageLoginPage extends Struct.SingleTypeSchema {
   collectionName: 'login_pages';
   info: {
@@ -910,6 +1046,9 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
   };
   attributes: {
     address: Schema.Attribute.Text;
+    agentId: Schema.Attribute.String;
+    certificateNumber: Schema.Attribute.String;
+    certificateUrl: Schema.Attribute.String;
     chassisNumber: Schema.Attribute.String;
     classOfInsurance: Schema.Attribute.String;
     companyAddress: Schema.Attribute.Text;
@@ -922,11 +1061,25 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    dateOfBirth: Schema.Attribute.Date;
     email: Schema.Attribute.Email;
+    emailError: Schema.Attribute.Text;
+    emailSent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     engineCapacity: Schema.Attribute.String;
     engineNumber: Schema.Attribute.String;
     firstName: Schema.Attribute.String;
-    issueDate: Schema.Attribute.Date;
+    flowStatus: Schema.Attribute.Enumeration<
+      [
+        'draft',
+        'paid',
+        'processing',
+        'generating',
+        'completed',
+        'emailed',
+        'failed',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
     lastName: Schema.Attribute.String;
     lga: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -937,6 +1090,22 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
       Schema.Attribute.Private;
     mobileNumber: Schema.Attribute.String;
     nin: Schema.Attribute.String;
+    npfSyncError: Schema.Attribute.Text;
+    npfSyncStatus: Schema.Attribute.Enumeration<
+      ['pending', 'success', 'failed']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
+    paymentAmount: Schema.Attribute.Decimal;
+    paymentDate: Schema.Attribute.DateTime;
+    paymentMethod: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'paystack'>;
+    paymentProcessed: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    paymentReference: Schema.Attribute.String;
+    paymentStatus: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'failed', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     plateFirst: Schema.Attribute.String;
     plateLast: Schema.Attribute.String;
     plateMiddle: Schema.Attribute.String;
@@ -946,14 +1115,38 @@ export interface ApiMotorInsuranceRegistrationMotorInsuranceRegistration
     policyHolderFirstName: Schema.Attribute.String;
     policyHolderLastName: Schema.Attribute.String;
     policyHolderMiddleName: Schema.Attribute.String;
+    policyNumber: Schema.Attribute.String;
     policyPhone: Schema.Attribute.String;
+    policyStatus: Schema.Attribute.Enumeration<
+      ['draft', 'active', 'expired', 'cancelled']
+    > &
+      Schema.Attribute.DefaultTo<'draft'>;
     policyType: Schema.Attribute.String;
     preferredInsurer: Schema.Attribute.String;
+    premium: Schema.Attribute.Decimal;
+    processingStage: Schema.Attribute.Enumeration<
+      [
+        'pending',
+        'paid',
+        'generating_policy',
+        'generating_certificate',
+        'finalizing',
+        'completed',
+        'failed',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'pending'>;
     publishedAt: Schema.Attribute.DateTime;
+    registrationNumber: Schema.Attribute.String;
     state: Schema.Attribute.String;
+    sumAssured: Schema.Attribute.BigInteger;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
     vehicleColor: Schema.Attribute.String;
     vehicleLga: Schema.Attribute.String;
     vehicleMake: Schema.Attribute.String;
@@ -1058,6 +1251,40 @@ export interface ApiStrategicPartnerStrategicPartner
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSystemCounterSystemCounter
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'system_counters';
+  info: {
+    displayName: 'system-counter';
+    pluralName: 'system-counters';
+    singularName: 'system-counter';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    certificatePrefix: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'WAX26/021'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::system-counter.system-counter'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.DefaultTo<'POLICY'>;
+    prefix: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'NPF/EMPT/QIB/26/021'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    value: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<20>;
   };
 }
 
@@ -1577,10 +1804,14 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
+    agentId: Schema.Attribute.String & Schema.Attribute.Unique;
+    agentType: Schema.Attribute.Enumeration<['agent', 'broker', 'none']> &
+      Schema.Attribute.DefaultTo<'none'>;
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    commissionBalance: Schema.Attribute.BigInteger &
+      Schema.Attribute.DefaultTo<'0'>;
     confirmationToken: Schema.Attribute.String & Schema.Attribute.Private;
     confirmed: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
@@ -1591,17 +1822,26 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    firstName: Schema.Attribute.String;
+    isAgent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    lastName: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    middleName: Schema.Attribute.String;
+    motor_insurance_registrations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::motor-insurance-registration.motor-insurance-registration'
+    >;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    phoneNumber: Schema.Attribute.String;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1637,6 +1877,9 @@ declare module '@strapi/strapi' {
       'api::about-slide.about-slide': ApiAboutSlideAboutSlide;
       'api::business.business': ApiBusinessBusiness;
       'api::ceo-profile.ceo-profile': ApiCeoProfileCeoProfile;
+      'api::certificate-template.certificate-template': ApiCertificateTemplateCertificateTemplate;
+      'api::claim.claim': ApiClaimClaim;
+      'api::commission.commission': ApiCommissionCommission;
       'api::contact.contact': ApiContactContact;
       'api::hero-slide.hero-slide': ApiHeroSlideHeroSlide;
       'api::homepage.homepage': ApiHomepageHomepage;
@@ -1645,12 +1888,14 @@ declare module '@strapi/strapi' {
       'api::insurance-page.insurance-page': ApiInsurancePageInsurancePage;
       'api::insurance-policie.insurance-policie': ApiInsurancePolicieInsurancePolicie;
       'api::insurance-slide.insurance-slide': ApiInsuranceSlideInsuranceSlide;
+      'api::insurer.insurer': ApiInsurerInsurer;
       'api::login-page.login-page': ApiLoginPageLoginPage;
       'api::login-slide.login-slide': ApiLoginSlideLoginSlide;
       'api::motor-insurance-registration.motor-insurance-registration': ApiMotorInsuranceRegistrationMotorInsuranceRegistration;
       'api::new.new': ApiNewNew;
       'api::project.project': ApiProjectProject;
       'api::strategic-partner.strategic-partner': ApiStrategicPartnerStrategicPartner;
+      'api::system-counter.system-counter': ApiSystemCounterSystemCounter;
       'api::team-member.team-member': ApiTeamMemberTeamMember;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
       'plugin::content-releases.release': PluginContentReleasesRelease;

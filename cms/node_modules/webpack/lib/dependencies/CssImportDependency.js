@@ -44,6 +44,14 @@ class CssImportDependency extends ModuleDependency {
 	}
 
 	/**
+	 * Returns true if this dependency can be concatenated
+	 * @returns {boolean} true if this dependency can be concatenated
+	 */
+	canConcatenate() {
+		return true;
+	}
+
+	/**
 	 * Returns an identifier to merge equal requests.
 	 * @returns {string | null} an identifier to merge equal requests
 	 */

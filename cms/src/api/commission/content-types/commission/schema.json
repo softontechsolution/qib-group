@@ -1,0 +1,32 @@
+{
+  "kind": "collectionType",
+  "collectionName": "commissions",
+  "info": {
+    "singularName": "commission",
+    "pluralName": "commissions",
+    "displayName": "Commission"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "agentId": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "policyNumber": {
+      "type": "string"
+    },
+    "payoutStatus": {
+      "type": "enumeration",
+      "default": "pending",
+      "enum": [
+        "pending",
+        "settled"
+      ]
+    }
+  }
+}
