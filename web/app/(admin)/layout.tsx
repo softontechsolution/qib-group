@@ -1,3 +1,4 @@
+// web/app/(admin)/admin/layout.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -11,16 +12,14 @@ import {
   Building2,
   CreditCard,
   FileText,
-  Activity,
   Mail, 
-  FileCheck2, 
-  BellRing, 
+  ShieldAlert, 
   LogOut, 
   Menu,
   X
 } from 'lucide-react';
 
-// Updated Navigation Hubs for frontend/app/(admin)/layout.tsx
+// Updated Navigation Hubs with direct links for Email and NPF logs
 const navItems = [
   { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Customers & Registrations', href: '/admin/customers', icon: Users },
@@ -29,7 +28,8 @@ const navItems = [
   { name: 'Insurers', href: '/admin/insurers', icon: Building2 },
   { name: 'Payments & Paystack', href: '/admin/payments', icon: CreditCard },
   { name: 'Website Content', href: '/admin/content', icon: FileText },
-  { name: 'System Logs & Queues', href: '/admin/logs/emails', icon: Activity },
+  { name: 'Email Error Logs', href: '/admin/logs/emails', icon: Mail },
+  { name: 'NPF Sync Error Logs', href: '/admin/logs/npf', icon: ShieldAlert },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

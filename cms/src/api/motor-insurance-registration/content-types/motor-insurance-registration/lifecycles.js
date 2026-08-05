@@ -6,7 +6,7 @@ module.exports = {
 
     // Only generate if not already provided
     if (!data.paymentReference) {
-      data.paymentReference = `INS-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      data.paymentReference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}${Math.floor(Math.random() * 1000)}`;
     }
 
     // Ensure default status
@@ -26,20 +26,23 @@ module.exports = {
 
     if (isPaid && hasAgent) {
       try {
-        const policyIdentifier = result.registrationNumber || `POL-${result.id}`;
+        const policyIdentifier = result.policyNumber || `POL-${result.id}`;
 
         // 3. SAFETY LAYER: Verify a ledger entry doesn't already exist for this transaction
-        const existingCommission = await strapi.entityService.findMany("api::commission.commission", {
-          filters: { policyNumber: policyIdentifier },
-        });
+        const existingCommission = await strapi.entityService.findMany(
+          "api::commission.commission",
+          {
+            filters: { policyNumber: policyIdentifier },
+          },
+        );
 
         if (existingCommission && existingCommission.length > 0) {
           // Commission has already been recorded for this specific purchase, stop execution
           return;
         }
 
-        // 4. THE CALCULATION: Set your commission rate (e.g., 10% of the premium)
-        const COMMISSION_RATE = 0.10; 
+        // 4. THE CALCULATION: Effective commission rate (6.25% net after insurer split and deductions)
+        const COMMISSION_RATE = 0.0625;
         const premiumAmount = Number(result.premium) || 0;
         const calculatedCommission = premiumAmount * COMMISSION_RATE;
 
@@ -51,14 +54,19 @@ module.exports = {
             agentId: result.agentId,
             amount: calculatedCommission,
             policyNumber: policyIdentifier,
-            payoutStatus: "pending", 
+            payoutStatus: "pending",
             publishedAt: new Date(),
           },
         });
 
-        strapi.log.info(`Commission of ₦${calculatedCommission} logged for Agent: ${result.agentId}`);
+        strapi.log.info(
+          `Commission of ₦${calculatedCommission} logged for Agent: ${result.agentId}`,
+        );
       } catch (error) {
-        strapi.log.error("Failed to automatically compute and store agent commission entry:", error);
+        strapi.log.error(
+          "Failed to automatically compute and store agent commission entry:",
+          error,
+        );
       }
     }
   },

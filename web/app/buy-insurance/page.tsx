@@ -21,24 +21,51 @@ const nigeriaData: Record<string, string[]> = {
   CrossRiver: ["Abi", "Akamkpa", "Akpabuyo", "Bakassi", "Bekwarra"],
   Delta: ["Aniocha North", "Aniocha South", "Bomadi", "Burutu", "Ethiope East"],
   Ebonyi: ["Abakaliki", "Afikpo North", "Afikpo South", "Ebonyi", "Ezza North"],
-  Edo: ["Akoko-Edo", "Egor", "Esan Central", "Esan North-East", "Esan South-East"],
+  Edo: [
+    "Akoko-Edo",
+    "Egor",
+    "Esan Central",
+    "Esan North-East",
+    "Esan South-East",
+  ],
   Ekiti: ["Ado Ekiti", "Efon", "Ekiti East", "Ekiti South-West", "Ekiti West"],
   Enugu: ["Aninri", "Awgu", "Enugu East", "Enugu North", "Enugu South"],
   FCT: ["Abaji", "Bwari", "Gwagwalada", "Kuje", "Kwali", "AMAC"],
   Gombe: ["Akko", "Balanga", "Billiri", "Dukku", "Funakaye"],
-  Imo: ["Aboh Mbaise", "Ahiazu Mbaise", "Ehime Mbano", "Ezinihitte", "Ideato North"],
+  Imo: [
+    "Aboh Mbaise",
+    "Ahiazu Mbaise",
+    "Ehime Mbano",
+    "Ezinihitte",
+    "Ideato North",
+  ],
   Jigawa: ["Auyo", "Babura", "Biriniwa", "Birnin Kudu", "Buji"],
   Kaduna: ["Birnin Gwari", "Chikun", "Giwa", "Igabi", "Ikara"],
   Kano: ["Ajingi", "Albasu", "Bagwai", "Bebeji", "Bichi"],
   Katsina: ["Bakori", "Batagarawa", "Batsari", "Baure", "Bindawa"],
   Kebbi: ["Aleiro", "Arewa Dandi", "Argungu", "Augie", "Bagudo"],
-  Kogi: ["Adavi", "Ajaokuta", "Ankpa", "Bassa", "Dekina", "Idah", "Ibaji", "Ayingba", "Lokoja"],
+  Kogi: [
+    "Adavi",
+    "Ajaokuta",
+    "Ankpa",
+    "Bassa",
+    "Dekina",
+    "Idah",
+    "Ibaji",
+    "Ayingba",
+    "Lokoja",
+  ],
   Kwara: ["Asa", "Baruten", "Edu", "Ekiti", "Ifelodun"],
   Lagos: ["Agege", "Ajeromi-Ifelodun", "Alimosho", "Amuwo-Odofin", "Apapa"],
   Nasarawa: ["Akwanga", "Awe", "Doma", "Karu", "Keana"],
   Niger: ["Agaie", "Agwara", "Bida", "Borgu", "Bosso"],
   Ogun: ["Abeokuta North", "Abeokuta South", "Ado-Odo/Ota", "Ewekoro", "Ifo"],
-  Ondo: ["Akoko North-East", "Akoko North-West", "Akoko South-East", "Akoko South-West"],
+  Ondo: [
+    "Akoko North-East",
+    "Akoko North-West",
+    "Akoko South-East",
+    "Akoko South-West",
+  ],
   Osun: ["Atakunmosa East", "Atakunmosa West", "Aiyedaade", "Aiyedire"],
   Oyo: ["Afijio", "Akinyele", "Atiba", "Atisbo", "Egbeda"],
   Plateau: ["Barkin Ladi", "Bassa", "Jos East", "Jos North", "Jos South"],
@@ -65,15 +92,17 @@ export default function SignupPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-  const [policyType, setPolicyType] = useState<"individual" | "company">("individual");
+  const [policyType, setPolicyType] = useState<"individual" | "company">(
+    "individual",
+  );
   const [insurers, setInsurers] = useState<any[]>([]);
   const [loadingInsurers, setLoadingInsurers] = useState(false);
   const [processingStage, setProcessingStage] = useState<string>("idle");
   const [polling, setPolling] = useState(false);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);  
-  
+  const [progress, setProgress] = useState(0);
+
   // ✅ NEW STATE: Store the generated certificate URL
   const [certificateUrl, setCertificateUrl] = useState<string | null>(null);
 
@@ -82,92 +111,100 @@ export default function SignupPage() {
   }, []);
 
   const pollStatus = async (documentId: string) => {
-      setPolling(true);
+    setPolling(true);
 
-      const interval = setInterval(async () => {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${documentId}`
-          );
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${documentId}`,
+        );
 
-          const data = await res.json();
+        const data = await res.json();
 
-          const stage = data?.data?.processingStage;
+        const stage = data?.data?.processingStage;
 
-          if (stage) {
-            setProcessingStage(stage);
-          }
-
-          if (stage === "completed") {
-            clearInterval(interval);
-            setPolling(false);
-            setSuccess("Policy generation complete. Certificate sent to email.");
-            
-            // ✅ CAPTURE CERTIFICATE URL DURING POLLING
-            if (data?.data?.certificateUrl) {
-              setCertificateUrl(data.data.certificateUrl);
-            }
-          }
-        } catch (err) {
-          console.error("Polling error:", err);
+        if (stage) {
+          setProcessingStage(stage);
         }
-      }, 3000); // every 3 seconds
-    };
+
+        if (stage === "completed") {
+          clearInterval(interval);
+          setPolling(false);
+          setSuccess("Policy generation complete. Certificate sent to email.");
+
+          // ✅ CAPTURE CERTIFICATE URL DURING POLLING
+          if (data?.data?.certificateUrl) {
+            setCertificateUrl(data.data.certificateUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 3000); // every 3 seconds
+  };
 
   const progressValue =
-    processingStage === "paid" ? 20 :
-    processingStage === "generating_policy" ? 40 :
-    processingStage === "generating_certificate" ? 70 :
-    processingStage === "finalizing" ? 90 :
-    processingStage === "completed" ? 100 : 0;
+    processingStage === "paid"
+      ? 20
+      : processingStage === "generating_policy"
+        ? 40
+        : processingStage === "generating_certificate"
+          ? 70
+          : processingStage === "finalizing"
+            ? 90
+            : processingStage === "completed"
+              ? 100
+              : 0;
 
   const [formData, setFormData] = useState({
-      classOfInsurance: "",
-      coverType: "",
-      vehicleUse: "",
-      preferredInsurer: "",
+    classOfInsurance: "",
+    coverType: "",
+    vehicleUse: "",
+    preferredInsurer: "",
 
-      firstName: "",
-      lastName: "",
-      mobileNumber: "",
-      email: "",
-      state: "",
-      lga: "",
-      address: "",
+    firstName: "",
+    lastName: "",
+    mobileNumber: "",
+    email: "",
+    state: "",
+    lga: "",
+    address: "",
 
-      vehicleState: "",
-      vehicleLga: "",
-      plateFirst: "",
-      plateMiddle: "",
-      plateLast: "",
+    vehicleState: "",
+    vehicleLga: "",
+    plateFirst: "",
+    plateMiddle: "",
+    plateLast: "",
 
-      vehicleMake: "",
-      vehicleModel: "",
-      vehicleColor: "",
-      engineCapacity: "",
-      chassisNumber: "",
-      engineNumber: "",
-      sumAssured: "",
+    vehicleMake: "",
+    vehicleModel: "",
+    vehicleColor: "",
+    engineCapacity: "",
+    chassisNumber: "",
+    engineNumber: "",
+    sumAssured: "",
 
-      policyHolderFirstName: "",
-      policyHolderMiddleName: "",
-      policyHolderLastName: "",
-      policyPhone: "",
-      policyEmail: "",
-      nin: "",
-      dateOfBirth: "",
-      policyAddress: "",
+    policyHolderFirstName: "",
+    policyHolderMiddleName: "",
+    policyHolderLastName: "",
+    policyPhone: "",
+    policyEmail: "",
+    nin: "",
+    dateOfBirth: "",
+    policyAddress: "",
 
-      companyPolicyHolderName: "",
-      companyPhone: "",
-      companyEmail: "",
-      companyName: "",
-      companyIssueDate: "",
-      companyAddress: "",
-    });
+    companyPolicyHolderName: "",
+    companyPhone: "",
+    companyEmail: "",
+    companyName: "",
+    companyIssueDate: "",
+    companyAddress: "",
+  });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -260,8 +297,7 @@ export default function SignupPage() {
     const normalizedRadius = radius - stroke * 0.5;
     const circumference = normalizedRadius * 2 * Math.PI;
 
-    const strokeDashoffset =
-      circumference - (progress / 100) * circumference;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
 
     return (
       <svg height={120} width={120}>
@@ -297,11 +333,11 @@ export default function SignupPage() {
       </svg>
     );
   };
-  
+
   const canSubmit = true; // review step is always allowed
 
-// SUBMITTING FORM DATA
- const submitApplication = async () => {
+  // SUBMITTING FORM DATA
+  const submitApplication = async () => {
     if (!formData.email || !formData.policyEmail) {
       setSuccess("Please fill all required email fields");
       setLoading(false);
@@ -328,21 +364,21 @@ export default function SignupPage() {
 
     setLoading(true);
 
-     // 🔥 FREEZE DATA IMMEDIATELY
-  const snapshot = { ...formData };
+    // 🔥 FREEZE DATA IMMEDIATELY
+    const snapshot = { ...formData };
 
-  console.log("LOCKED SNAPSHOT:", snapshot);
-    
-    const registrationNumber =
-      `${formData.plateFirst}-${formData.plateMiddle}${formData.plateLast}`;
+    console.log("LOCKED SNAPSHOT:", snapshot);
+
+    const registrationNumber = `${formData.plateFirst}-${formData.plateMiddle}${formData.plateLast}`;
 
     const premium = getPremium();
-    const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}`;
+    const reference = `INS-NPF-${new Date().getFullYear()}-${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
     // 👈 DETERMINISTIC AGENT ROUTING: Evaluates if checkout is executed by an agent profile
-    const activeAgentId = session?.user && (session as any).user.isAgent 
-      ? (session as any).user.agentId 
-      : null;
+    const activeAgentId =
+      session?.user && (session as any).user.isAgent
+        ? (session as any).user.agentId
+        : null;
 
     console.log("FORM DATA BEFORE SUBMIT:", formData);
     try {
@@ -413,7 +449,6 @@ export default function SignupPage() {
 
         onSuccess: async (response) => {
           try {
-
             const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
             if (!STRAPI_URL) {
@@ -426,7 +461,6 @@ export default function SignupPage() {
             setIsProcessing(true);
             setProgress(10);
             pollStatus(registration.documentId);
-
           } catch (err) {
             console.error(err);
             setSuccess("Payment succeeded but processing tracking failed.");
@@ -444,45 +478,43 @@ export default function SignupPage() {
     }
   };
 
-const handleSubmit = async (e?: React.FormEvent) => {
-      if (e) e.preventDefault();
-      await submitApplication();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    await submitApplication();
   };
 
-  //INSURER 
+  //INSURER
   useEffect(() => {
-      const loadInsurers = async () => {
-        try {
-          setLoadingInsurers(true);
+    const loadInsurers = async () => {
+      try {
+        setLoadingInsurers(true);
 
-          const res = await getInsurers();
+        const res = await getInsurers();
 
-          // ✅ FIX: Strapi returns { data: [...] }
-          const insurersData = Array.isArray(res)
-            ? res
-            : res?.data || [];
+        // ✅ FIX: Strapi returns { data: [...] }
+        const insurersData = Array.isArray(res) ? res : res?.data || [];
 
-          const normalized = insurersData.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            logo: item.logo,
-            isActive: item.isActive,
-            priority: item.priority,
-          }));
+        const normalized = insurersData.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          logo: item.logo,
+          isActive: item.isActive,
+          priority: item.priority,
+        }));
 
-          console.log("INSURERS RAW RESPONSE:", res);
+        console.log("INSURERS RAW RESPONSE:", res);
 
-          setInsurers(normalized);
-        } catch (err) {
-          console.error("Failed to load insurers:", err);
-          setInsurers([]);
-        } finally {
-          setLoadingInsurers(false);
-        }
-      };
+        setInsurers(normalized);
+      } catch (err) {
+        console.error("Failed to load insurers:", err);
+        setInsurers([]);
+      } finally {
+        setLoadingInsurers(false);
+      }
+    };
 
-      loadInsurers();
-    }, []);
+    loadInsurers();
+  }, []);
 
   //SOCKET LINKING
   useEffect(() => {
@@ -500,12 +532,12 @@ const handleSubmit = async (e?: React.FormEvent) => {
       if (data.message) {
         setSuccess(data.message);
       }
-      
+
       // ✅ UPDATE STAGE SO UI KNOWS WHEN WE ARE DONE
       if (data.stage) {
         setProcessingStage(data.stage);
       }
-      
+
       // ✅ CAPTURE URL FROM SOCKET
       if (data.certificateUrl) {
         setCertificateUrl(data.certificateUrl);
@@ -522,7 +554,6 @@ const handleSubmit = async (e?: React.FormEvent) => {
     };
   }, [registrationId, socket]);
 
-
   return (
     <main className="min-h-screen bg-black text-white flex">
       {/* MOBILE OVERLAY */}
@@ -536,11 +567,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
       {/* SIDEBAR */}
       <aside
         className={`fixed md:sticky md:top-0 z-50 top-0 left-0 h-screen w-72 bg-gray-950 border-r border-white/5 p-8 flex flex-col transform transition-transform duration-300
-        ${
-          menuOpen
-            ? "translate-x-0"
-            : "-translate-x-full md:translate-x-0"
-        }`}
+        ${menuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         <button
           className="md:hidden mb-8 self-end"
@@ -560,31 +587,19 @@ const handleSubmit = async (e?: React.FormEvent) => {
         </div>
 
         <nav className="space-y-6 text-gray-400">
-          <Link
-            href="/"
-            className="block hover:text-[#0096c7]"
-          >
+          <Link href="/" className="block hover:text-[#0096c7]">
             Dashboard
           </Link>
 
-          <Link
-            href="#"
-            className="block hover:text-[#0096c7]"
-          >
+          <Link href="#" className="block hover:text-[#0096c7]">
             Insurance Plans
           </Link>
 
-          <Link
-            href="#"
-            className="block hover:text-[#0096c7]"
-          >
+          <Link href="#" className="block hover:text-[#0096c7]">
             Claims
           </Link>
 
-          <Link
-            href="#"
-            className="block hover:text-[#0096c7]"
-          >
+          <Link href="#" className="block hover:text-[#0096c7]">
             Support
           </Link>
         </nav>
@@ -610,15 +625,15 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
               {/* 👇 Swap out dynamically based on state */}
               {!session ? (
-                <Link 
-                  href="/login" 
+                <Link
+                  href="/login"
                   className="rounded-lg bg-[#0096c7] px-4 py-2 text-sm font-medium text-white"
                 >
                   Login
                 </Link>
               ) : (
-                <Link 
-                  href="/vault" 
+                <Link
+                  href="/vault"
                   className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                   Go to Vault
@@ -629,21 +644,21 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
           <div className="hidden md:flex justify-end">
             {/* 👇 Swap out dynamically based on state */}
-              {!session ? (
-                <Link 
-                  href="/login" 
-                  className="rounded-lg bg-[#0096c7] px-4 py-2 text-sm font-medium text-white"
-                >
-                  Login
-                </Link>
-              ) : (
-                <Link 
-                  href="/vault" 
-                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Go to Vault
-                </Link>
-              )}
+            {!session ? (
+              <Link
+                href="/login"
+                className="rounded-lg bg-[#0096c7] px-4 py-2 text-sm font-medium text-white"
+              >
+                Login
+              </Link>
+            ) : (
+              <Link
+                href="/vault"
+                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Go to Vault
+              </Link>
+            )}
           </div>
         </div>
 
@@ -671,17 +686,12 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
             {/* TITLE */}
             <div className="mb-6">
-              <h3 className="font-bold">
-                Buy Motor Vehicle Insurance
-              </h3>
+              <h3 className="font-bold">Buy Motor Vehicle Insurance</h3>
             </div>
 
             {/* CARD */}
             <div className="bg-gray-950 border border-white/5 rounded-3xl p-6 md:p-10">
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-6"
-              >
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* STEP 1 */}
                 {step === 1 && (
                   <>
@@ -696,21 +706,13 @@ const handleSubmit = async (e?: React.FormEvent) => {
                         onChange={handleChange}
                         className="w-full mt-2 p-4 bg-black border border-white/10 rounded-2xl"
                       >
-                        <option value="">
-                          Select Insurance Class
-                        </option>
+                        <option value="">Select Insurance Class</option>
 
-                        <option value="Motor Vehicle">
-                          Motor Vehicle
-                        </option>
+                        <option value="Motor Vehicle">Motor Vehicle</option>
 
-                        <option value="Aviation">
-                          Aviation
-                        </option>
+                        <option value="Aviation">Aviation</option>
 
-                        <option value="Marine">
-                          Marine
-                        </option>
+                        <option value="Marine">Marine</option>
                       </select>
                     </div>
 
@@ -725,9 +727,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                         onChange={handleChange}
                         className="w-full mt-2 p-4 bg-black border border-white/10 rounded-2xl"
                       >
-                        <option value="">
-                          Select Insurance Type
-                        </option>
+                        <option value="">Select Insurance Type</option>
 
                         <option value="Third Party Only">
                           Third Party Only
@@ -737,9 +737,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                           Third Party Fire and Theft
                         </option>
 
-                        <option value="Comprehensive">
-                          Comprehensive
-                        </option>
+                        <option value="Comprehensive">Comprehensive</option>
                       </select>
                     </div>
 
@@ -754,21 +752,17 @@ const handleSubmit = async (e?: React.FormEvent) => {
                         onChange={handleChange}
                         className="w-full mt-2 p-4 bg-black border border-white/10 rounded-2xl"
                       >
-                        <option value="">
-                          Select Vehicle Type
-                        </option>
+                        <option value="">Select Vehicle Type</option>
 
-                        <option value="Private Motor">
-                          Private Motor
-                        </option>
+                        <option value="Private Motor">Private Motor</option>
 
-                        <option value="Commercial">
-                          Commercial
-                        </option>
+                        <option value="Commercial">Commercial</option>
                         <option value="Trucks">Trucks</option>
                         <option value="Tricycle">Tricycle</option>
                         <option value="Mini Truck">Mini Truck</option>
-                        <option value="Special Types">Special Types (Ambulances/Hearses)</option>
+                        <option value="Special Types">
+                          Special Types (Ambulances/Hearses)
+                        </option>
                       </select>
                     </div>
                   </>
@@ -782,61 +776,60 @@ const handleSubmit = async (e?: React.FormEvent) => {
                     </h2>
 
                     {loadingInsurers ? (
-                        <p className="text-gray-400">Loading insurers...</p>
-                      ) : insurers.length === 0 ? (
-                        <p className="text-red-400">No insurers available</p>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-5">
-                          {insurers.map((insurer) => {
-                            const logoUrl = insurer.logo?.url
-                              ? `http://localhost:1337${insurer.logo.url}`
-                              : null;
+                      <p className="text-gray-400">Loading insurers...</p>
+                    ) : insurers.length === 0 ? (
+                      <p className="text-red-400">No insurers available</p>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-5">
+                        {insurers.map((insurer) => {
+                          const logoUrl = insurer.logo?.url
+                            ? `http://localhost:1337${insurer.logo.url}`
+                            : null;
 
-                            return (
-                              <button
-                                key={insurer.id}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({
-                                    ...formData,
-                                    preferredInsurer: insurer.name,
-                                  });
+                          return (
+                            <button
+                              key={insurer.id}
+                              type="button"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  preferredInsurer: insurer.name,
+                                });
 
-                                  nextStep();
-                                }}
-                                className={`p-6 border rounded-2xl transition-all
+                                nextStep();
+                              }}
+                              className={`p-6 border rounded-2xl transition-all
                                   ${
                                     formData.preferredInsurer === insurer.name
                                       ? "border-[#0096c7] bg-[#0096c7]/10"
                                       : "border-white/10"
                                   }`}
-                              >
-                                <div className="flex flex-col items-center gap-4">
-                                  {logoUrl && (
-                                    <div className="relative h-14 w-full">
-                                      <Image
-                                        src={logoUrl}
-                                        alt={insurer.name}
-                                        fill
-                                        className="object-contain"
-                                      />
-                                    </div>
-                                  )}
+                            >
+                              <div className="flex flex-col items-center gap-4">
+                                {logoUrl && (
+                                  <div className="relative h-14 w-full">
+                                    <Image
+                                      src={logoUrl}
+                                      alt={insurer.name}
+                                      fill
+                                      className="object-contain"
+                                    />
+                                  </div>
+                                )}
 
-                                  <span>{insurer.name}</span>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
+                                <span>{insurer.name}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 
-               {/* STEP 3 */}
+                {/* STEP 3 */}
                 {step === 3 && (
                   <div className="space-y-10">
-
                     {/* PERSONAL DETAILS */}
                     <div>
                       <h2 className="text-xl md:text-2xl font-semibold mb-6">
@@ -938,52 +931,54 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       </h2>
 
                       <div className="grid md:grid-cols-2 gap-6">
+                        {/* STATE */}
+                        <select
+                          name="vehicleState"
+                          value={formData.vehicleState}
+                          onChange={(e) => {
+                            setFormData({
+                              ...formData,
+                              vehicleState: e.target.value,
+                              vehicleLga: "",
+                            });
+                          }}
+                          className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                        >
+                          <option value="">Select State</option>
 
-                            {/* STATE */}
-                            <select
-                              name="vehicleState"
-                              value={formData.vehicleState}
-                              onChange={(e) => {
-                                setFormData({
-                                  ...formData,
-                                  vehicleState: e.target.value,
-                                  vehicleLga: "",
-                                });
-                              }}
-                              className="w-full p-4 bg-black border border-white/10 rounded-2xl"
-                            >
-                              <option value="">Select State</option>
+                          {Object.keys(nigeriaData).map((vehicleState) => (
+                            <option key={vehicleState} value={vehicleState}>
+                              {vehicleState}
+                            </option>
+                          ))}
+                        </select>
 
-                              {Object.keys(nigeriaData).map((vehicleState) => (
-                                <option key={vehicleState} value={vehicleState}>
-                                  {vehicleState}
+                        {/* LGA */}
+                        <select
+                          name="vehicleLga"
+                          value={formData.vehicleLga}
+                          onChange={handleChange}
+                          disabled={!formData.vehicleState}
+                          className="w-full p-4 bg-black border border-white/10 rounded-2xl disabled:opacity-50"
+                        >
+                          <option value="">Select LGA</option>
+
+                          {formData.vehicleState &&
+                            nigeriaData[formData.vehicleState]?.map(
+                              (vehicleLga) => (
+                                <option key={vehicleLga} value={vehicleLga}>
+                                  {vehicleLga}
                                 </option>
-                              ))}
-                            </select>
-
-                            {/* LGA */}
-                            <select
-                              name="vehicleLga"
-                              value={formData.vehicleLga}
-                              onChange={handleChange}
-                              disabled={!formData.vehicleState}
-                              className="w-full p-4 bg-black border border-white/10 rounded-2xl disabled:opacity-50"
-                            >
-                              <option value="">Select LGA</option>
-
-                              {formData.vehicleState &&
-                                nigeriaData[formData.vehicleState]?.map((vehicleLga) => (
-                                  <option key={vehicleLga} value={vehicleLga}>
-                                    {vehicleLga}
-                                  </option>
-                                ))}
-                            </select>
+                              ),
+                            )}
+                        </select>
                       </div>
 
                       {/* REGISTRATION NUMBER */}
                       <div className="mt-8">
                         <p className="text-sm text-gray-400 mb-4">
-                          Registration Number (Enter the local government and enter the other characters in the other fields)
+                          Registration Number (Enter the local government and
+                          enter the other characters in the other fields)
                         </p>
 
                         <div className="grid grid-cols-3 gap-4">
@@ -1018,7 +1013,6 @@ const handleSubmit = async (e?: React.FormEvent) => {
 
                       {/* VEHICLE EXTRA DETAILS */}
                       <div className="grid md:grid-cols-3 gap-6 mt-8">
-
                         <input
                           type="text"
                           name="vehicleMake"
@@ -1062,7 +1056,10 @@ const handleSubmit = async (e?: React.FormEvent) => {
                           onChange={(e) => {
                             const value = e.target.value.toUpperCase();
                             if (value.length <= 17) {
-                              setFormData({ ...formData, chassisNumber: value });
+                              setFormData({
+                                ...formData,
+                                chassisNumber: value,
+                              });
                             }
                           }}
                           placeholder="17-character VIN"
@@ -1130,7 +1127,6 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       {/* INDIVIDUAL */}
                       {policyType === "individual" && (
                         <div className="grid md:grid-cols-2 gap-6">
-
                           <input
                             type="text"
                             name="policyHolderFirstName"
@@ -1140,13 +1136,13 @@ const handleSubmit = async (e?: React.FormEvent) => {
                             className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
-                          <input 
+                          <input
                             type="text"
-                            name="policyHolderMiddleName" 
-                            value={formData.policyHolderMiddleName} 
-                            onChange={handleChange} 
-                            placeholder="Policy Holder Middle Name" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
+                            name="policyHolderMiddleName"
+                            value={formData.policyHolderMiddleName}
+                            onChange={handleChange}
+                            placeholder="Policy Holder Middle Name"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
                           <input
@@ -1192,13 +1188,13 @@ const handleSubmit = async (e?: React.FormEvent) => {
                             className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
-                          <input 
-                            type="text" 
-                            name="policyCompanyName" 
-                            value={formData.preferredInsurer} 
-                            onChange={handleChange} 
-                            placeholder="Issurance Company Name" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
+                          <input
+                            type="text"
+                            name="policyCompanyName"
+                            value={formData.preferredInsurer}
+                            onChange={handleChange}
+                            placeholder="Issurance Company Name"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
                           <input
@@ -1209,79 +1205,84 @@ const handleSubmit = async (e?: React.FormEvent) => {
                             className="w-full p-4 bg-black border border-white/10 rounded-2xl"
                           />
 
-                          <textarea 
-                            name="policyAddress" 
-                            value={formData.policyAddress} 
-                            onChange={handleChange} rows={4} 
-                            placeholder="Policy Holder Address" 
-                            className="md:col-span-2 w-full p-4 bg-black border border-white/10 rounded-2xl resize-none" 
+                          <textarea
+                            name="policyAddress"
+                            value={formData.policyAddress}
+                            onChange={handleChange}
+                            rows={4}
+                            placeholder="Policy Holder Address"
+                            className="md:col-span-2 w-full p-4 bg-black border border-white/10 rounded-2xl resize-none"
                           />
-
                         </div>
                       )}
-                      {/* COMPANY FORM */} 
-                      {policyType === "company" && ( 
+                      {/* COMPANY FORM */}
+                      {policyType === "company" && (
                         <div className="grid md:grid-cols-2 gap-6">
-
-                          <input type="text" 
-                            name="companyPolicyHolderName" 
-                            value={formData.companyPolicyHolderName} 
-                            onChange={handleChange} 
-                            placeholder="Policy Holder Company Name" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
-                          /> 
-                          <input 
-                            type="text" 
-                            name="companyPhone" 
-                            value={formData.companyPhone} 
-                            onChange={handleChange} 
-                            placeholder="Phone Number" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
-                          /> 
-                          <input 
-                            type="email" 
-                            name="companyEmail" 
-                            value={formData.companyEmail} 
-                            onChange={handleChange} 
-                            placeholder="Email" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
-                          /> 
-                          <input 
-                            type="text" 
-                            name="companyName" 
-                            value={formData.preferredInsurer} 
-                            onChange={handleChange} 
-                            placeholder="Company Name" 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
-                          /> 
-                          <input 
-                            type="date" 
-                            name="companyIssueDate" 
-                            value={formData.companyIssueDate} 
-                            onChange={handleChange} 
-                            className="w-full p-4 bg-black border border-white/10 rounded-2xl" 
-                          /> 
-                          <textarea 
-                            name="companyAddress" 
-                            value={formData.companyAddress} 
-                            onChange={handleChange} 
-                            rows={4} 
-                            placeholder="Company Address" 
-                            className="md:col-span-2 w-full p-4 bg-black border border-white/10 rounded-2xl resize-none" 
-                          /> 
-                        </div> 
+                          <input
+                            type="text"
+                            name="companyPolicyHolderName"
+                            value={formData.companyPolicyHolderName}
+                            onChange={handleChange}
+                            placeholder="Policy Holder Company Name"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                          />
+                          <input
+                            type="text"
+                            name="companyPhone"
+                            value={formData.companyPhone}
+                            onChange={handleChange}
+                            placeholder="Phone Number"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                          />
+                          <input
+                            type="email"
+                            name="companyEmail"
+                            value={formData.companyEmail}
+                            onChange={handleChange}
+                            placeholder="Email"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                          />
+                          <input
+                            type="text"
+                            name="companyName"
+                            value={formData.preferredInsurer}
+                            onChange={handleChange}
+                            placeholder="Company Name"
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                          />
+                          <input
+                            type="date"
+                            name="companyIssueDate"
+                            value={formData.companyIssueDate}
+                            onChange={handleChange}
+                            className="w-full p-4 bg-black border border-white/10 rounded-2xl"
+                          />
+                          <textarea
+                            name="companyAddress"
+                            value={formData.companyAddress}
+                            onChange={handleChange}
+                            rows={4}
+                            placeholder="Company Address"
+                            className="md:col-span-2 w-full p-4 bg-black border border-white/10 rounded-2xl resize-none"
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
                 )}
-                
 
                 {/* STEP 4 */}
                 {step === 4 && (
                   <div className="space-y-10">
-                    <div> 
-                      <h2 className="text-2xl font-bold mb-2"> Review Your Information </h2> 
-                      <p className="text-gray-600"> Please confirm your details before submitting. </p> 
+                    <div>
+                      <h2 className="text-2xl font-bold mb-2">
+                        {" "}
+                        Review Your Information{" "}
+                      </h2>
+                      <p className="text-gray-600">
+                        {" "}
+                        Please confirm your details before submitting.{" "}
+                      </p>
                     </div>
 
                     {/* INSURANCE INFO */}
@@ -1310,18 +1311,35 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       </div>
                     </div>
 
-                    {/* PERSONAL INFO */} 
-                    <div className="p-6 border rounded-2xl bg-gray-50"> 
-                      <h3 className="font-semibold text-lg mb-4 text-[#0096c7]">Personal Information</h3>
-                       <div className="grid md:grid-cols-2 gap-4 text-black"> 
-                        <p><strong>First Name:</strong> {formData.firstName}</p> 
-                        <p><strong>Last Name:</strong> {formData.lastName}</p> 
-                        <p><strong>Phone:</strong> {formData.mobileNumber}</p> 
-                        <p><strong>Email:</strong> {formData.email}</p> 
-                        <p><strong>State:</strong> {formData.state}</p> 
-                        <p><strong>LGA:</strong> {formData.lga}</p> 
-                        <p className="md:col-span-2"> <strong>Address:</strong> {formData.address} </p> 
-                      </div> 
+                    {/* PERSONAL INFO */}
+                    <div className="p-6 border rounded-2xl bg-gray-50">
+                      <h3 className="font-semibold text-lg mb-4 text-[#0096c7]">
+                        Personal Information
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4 text-black">
+                        <p>
+                          <strong>First Name:</strong> {formData.firstName}
+                        </p>
+                        <p>
+                          <strong>Last Name:</strong> {formData.lastName}
+                        </p>
+                        <p>
+                          <strong>Phone:</strong> {formData.mobileNumber}
+                        </p>
+                        <p>
+                          <strong>Email:</strong> {formData.email}
+                        </p>
+                        <p>
+                          <strong>State:</strong> {formData.state}
+                        </p>
+                        <p>
+                          <strong>LGA:</strong> {formData.lga}
+                        </p>
+                        <p className="md:col-span-2">
+                          {" "}
+                          <strong>Address:</strong> {formData.address}{" "}
+                        </p>
+                      </div>
                     </div>
 
                     {/* VEHICLE INFO */}
@@ -1331,10 +1349,8 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       </h3>
 
                       <div className="grid md:grid-cols-2 gap-4 text-black">
-
                         <p>
-                          <strong>Vehicle Make:</strong>{" "}
-                          {formData.vehicleMake}
+                          <strong>Vehicle Make:</strong> {formData.vehicleMake}
                         </p>
 
                         <p>
@@ -1363,48 +1379,95 @@ const handleSubmit = async (e?: React.FormEvent) => {
                         </p>
 
                         <p>
-                          <strong>Plate Number:</strong>{" "}
-                          {formData.plateFirst}-
+                          <strong>Plate Number:</strong> {formData.plateFirst}-
                           {formData.plateMiddle}
                           {formData.plateLast}
                         </p>
 
                         <p>
                           <strong>Vehicle Value:</strong> ₦
-                          {Number(
-                            formData.sumAssured || 0
-                          ).toLocaleString()}
+                          {Number(formData.sumAssured || 0).toLocaleString()}
                         </p>
                       </div>
                     </div>
 
-                    {/* POLICY INFO */} 
-                    <div className="p-6 border rounded-2xl bg-gray-50"> 
-                      <h3 className="font-semibold text-lg mb-4 text-[#0096c7]">Policy Information</h3> 
-                      
-                      {policyType === "individual" ? ( 
-                        <div className="grid md:grid-cols-2 gap-4 text-black"> 
-                          <p><strong>Policy Type:</strong> Individual</p> 
-                          <p><strong>Preferred Insurer:</strong> {formData.preferredInsurer}</p> 
-                          <p><strong>First Name:</strong> {formData.policyHolderFirstName}</p> 
-                          <p><strong>Middle Name:</strong> {formData.policyHolderMiddleName}</p> 
-                          <p><strong>Last Name:</strong> {formData.policyHolderLastName}</p> 
-                          <p><strong>Phone:</strong> {formData.policyPhone}</p> 
-                          <p><strong>Email:</strong> {formData.policyEmail}</p> 
-                          <p><strong>NIN:</strong> {formData.nin || "Not provided"}</p> 
-                          <p><strong>Date of Birth:</strong> {formData.dateOfBirth}</p> 
-                          <p className="md:col-span-2"> <strong>Address:</strong> {formData.policyAddress} </p> 
-                        </div> ) : ( 
-                          <div className="grid md:grid-cols-2 gap-4 text-black"> 
-                            <p><strong>Policy Type:</strong> Company</p> 
-                            <p><strong>Preferred Insurer:</strong> {formData.preferredInsurer}</p> 
-                            <p><strong>Company Holder:</strong> {formData.companyPolicyHolderName}</p> 
-                            <p><strong>Phone:</strong> {formData.companyPhone}</p> 
-                            <p><strong>Email:</strong> {formData.companyEmail}</p> 
-                            <p><strong>Issue Date:</strong> {formData.companyIssueDate}</p> 
-                            <p className="md:col-span-2"> <strong>Address:</strong> {formData.companyAddress} </p> 
-                          </div> 
-                        )} 
+                    {/* POLICY INFO */}
+                    <div className="p-6 border rounded-2xl bg-gray-50">
+                      <h3 className="font-semibold text-lg mb-4 text-[#0096c7]">
+                        Policy Information
+                      </h3>
+
+                      {policyType === "individual" ? (
+                        <div className="grid md:grid-cols-2 gap-4 text-black">
+                          <p>
+                            <strong>Policy Type:</strong> Individual
+                          </p>
+                          <p>
+                            <strong>Preferred Insurer:</strong>{" "}
+                            {formData.preferredInsurer}
+                          </p>
+                          <p>
+                            <strong>First Name:</strong>{" "}
+                            {formData.policyHolderFirstName}
+                          </p>
+                          <p>
+                            <strong>Middle Name:</strong>{" "}
+                            {formData.policyHolderMiddleName}
+                          </p>
+                          <p>
+                            <strong>Last Name:</strong>{" "}
+                            {formData.policyHolderLastName}
+                          </p>
+                          <p>
+                            <strong>Phone:</strong> {formData.policyPhone}
+                          </p>
+                          <p>
+                            <strong>Email:</strong> {formData.policyEmail}
+                          </p>
+                          <p>
+                            <strong>NIN:</strong>{" "}
+                            {formData.nin || "Not provided"}
+                          </p>
+                          <p>
+                            <strong>Date of Birth:</strong>{" "}
+                            {formData.dateOfBirth}
+                          </p>
+                          <p className="md:col-span-2">
+                            {" "}
+                            <strong>Address:</strong>{" "}
+                            {formData.policyAddress}{" "}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="grid md:grid-cols-2 gap-4 text-black">
+                          <p>
+                            <strong>Policy Type:</strong> Company
+                          </p>
+                          <p>
+                            <strong>Preferred Insurer:</strong>{" "}
+                            {formData.preferredInsurer}
+                          </p>
+                          <p>
+                            <strong>Company Holder:</strong>{" "}
+                            {formData.companyPolicyHolderName}
+                          </p>
+                          <p>
+                            <strong>Phone:</strong> {formData.companyPhone}
+                          </p>
+                          <p>
+                            <strong>Email:</strong> {formData.companyEmail}
+                          </p>
+                          <p>
+                            <strong>Issue Date:</strong>{" "}
+                            {formData.companyIssueDate}
+                          </p>
+                          <p className="md:col-span-2">
+                            {" "}
+                            <strong>Address:</strong>{" "}
+                            {formData.companyAddress}{" "}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* PAYMENT SUMMARY */}
@@ -1414,20 +1477,16 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       </h3>
 
                       <div className="space-y-4 text-black">
-
                         <p>
-                          <strong>Cover Type:</strong>{" "}
-                          {formData.coverType}
+                          <strong>Cover Type:</strong> {formData.coverType}
                         </p>
 
                         <p>
-                          <strong>Vehicle Type:</strong>{" "}
-                          {formData.vehicleUse}
+                          <strong>Vehicle Type:</strong> {formData.vehicleUse}
                         </p>
 
                         <p className="text-xl font-bold text-[#0096c7]">
-                          Premium: ₦
-                          {getPremium().toLocaleString()}
+                          Premium: ₦{getPremium().toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -1473,7 +1532,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                       if (step < 4) {
                         nextStep();
                       } else {
-                         submitApplication()// ONLY triggers payment here
+                        submitApplication(); // ONLY triggers payment here
                       }
                     }}
                     disabled={
@@ -1495,11 +1554,9 @@ const handleSubmit = async (e?: React.FormEvent) => {
                     {step === 4 ? "Proceed to Payment" : "Next"}
                   </button>
                 </div>
-                { /* PAYMENT MESSAGES */}      
+                {/* PAYMENT MESSAGES */}
                 {success && !isProcessing && (
-                  <p className="mt-6 text-green-500 font-medium">
-                    {success}
-                  </p>
+                  <p className="mt-6 text-green-500 font-medium">{success}</p>
                 )}
                 {/* STEP PROGRESS BAR UI */}
               </form>
@@ -1511,40 +1568,66 @@ const handleSubmit = async (e?: React.FormEvent) => {
       {/* ✅ STEP PROGRESS BAR & SUCCESS UI */}
       {isProcessing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md transition-all duration-500 p-4">
-          
           {processingStage === "completed" ? (
-            
             /* 🏆 NEW SUCCESS STATE UI */
             <div className="flex flex-col items-center justify-center p-8 bg-gray-950 border border-white/10 rounded-2xl shadow-2xl max-w-md w-full mx-auto text-center animate-fadeIn">
               <div className="w-20 h-20 bg-[#0096c7]/20 text-[#0096c7] rounded-full flex items-center justify-center mb-6">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-10 h-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
-              
-              <h2 className="text-2xl font-bold text-white mb-2">You're Fully Covered!</h2>
+
+              <h2 className="text-2xl font-bold text-white mb-2">
+                You're Fully Covered!
+              </h2>
               <p className="text-gray-400 mb-8 text-sm">
-                Your policy has been successfully generated. We have also created a secure account for you using your email. Please check your inbox for your temporary password.
+                Your policy has been successfully generated. We have also
+                created a secure account for you using your email. Please check
+                your inbox for your temporary password.
               </p>
 
               <div className="flex flex-col w-full gap-4">
                 {/* Download Button */}
                 {certificateUrl && (
-                  <a 
-                    href={certificateUrl.startsWith('http') ? certificateUrl : `${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'}${certificateUrl}`}
+                  <a
+                    href={
+                      certificateUrl.startsWith("http")
+                        ? certificateUrl
+                        : `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}${certificateUrl}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-4 px-4 bg-[#0096c7] hover:bg-[#007aa8] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                      />
                     </svg>
                     Download Certificate
                   </a>
                 )}
 
                 {/* Proceed to Login / Dashboard */}
-                <Link 
+                <Link
                   href="/login"
                   className="w-full py-4 px-4 bg-transparent border border-white/20 hover:bg-white/5 text-white font-semibold rounded-xl transition-colors"
                 >
@@ -1552,9 +1635,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
                 </Link>
               </div>
             </div>
-
           ) : (
-
             /* ⏳ EXISTING LOADING STATE UI */
             <div className="flex flex-col items-center gap-6 animate-fadeIn">
               {/* Circular Progress */}
