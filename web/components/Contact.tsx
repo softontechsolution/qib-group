@@ -17,7 +17,7 @@ export default function Contact() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({
       ...form,
@@ -48,23 +48,21 @@ export default function Contact() {
 
   return (
     <section id="contact" className="py-24 px-6 bg-white text-black">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
         className="max-w-4xl mx-auto"
       >
-            <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                Contact Us
-            </h2>
-            <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-                Have a question or want to work together? Send us a message.
-            </p>
-            </div>
-        </motion.div>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h2>
+          <div className="h-1.5 w-24 bg-[#0096c7] mx-auto mb-6 rounded-full"></div>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+            Have a question or want to work together? Send us a message.
+          </p>
+        </div>
+      </motion.div>
       <div className="max-w-7xl mx-auto space-y-16">
         {/* TOP TWO COLUMNS */}
         <div className="grid md:grid-cols-2 gap-16 items-start">
@@ -90,14 +88,15 @@ export default function Contact() {
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-[#0096c7]/10 rounded-xl flex items-center justify-center shrink-0 border border-[#0096c7]/20">
-                    <span className="text-[#0096c7]">📍</span>
+                  <span className="text-[#0096c7]">📍</span>
                 </div>
                 <div>
                   <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
                     Office Address
                   </p>
                   <p className="mt-2 text-gray-700">
-                    Plot 24, Central Business District, Abuja, Nigeria
+                    56B Birnin Kebbi Cres, off Kumo Street, off Ahmadu Bello
+                    Way, Garki, Abuja 900103, Federal Capital Territory
                   </p>
                 </div>
               </div>
@@ -110,9 +109,7 @@ export default function Contact() {
                   <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
                     Official Email
                   </p>
-                  <p className="mt-2 text-gray-700">
-                    info@qibgroup.com
-                  </p>
+                  <p className="mt-2 text-gray-700">info@qibgroup.com</p>
                 </div>
               </div>
 
@@ -124,9 +121,7 @@ export default function Contact() {
                   <p className="text-sm uppercase tracking-wider text-[#0096c7] font-semibold">
                     Phone Number
                   </p>
-                  <p className="mt-2 text-gray-700">
-                    +234 800 000 0000
-                  </p>
+                  <p className="mt-2 text-gray-700">+234 706 675 0550</p>
                 </div>
               </div>
             </div>
@@ -193,44 +188,43 @@ export default function Contact() {
             />
 
             <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-[#0096c7] text-white font-bold rounded-2xl hover:shadow-[0_0_30px_-5px_#0096c7] transition-all disabled:opacity-50 text-lg uppercase tracking-widest"
-          >
-            {loading ? "Sending..." : "Send Message"}
-          </motion.button>
-
-          {success && (
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center text-green-400 font-bold bg-green-400/10 py-4 rounded-xl border border-green-400/20"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              disabled={loading}
+              className="w-full py-5 bg-[#0096c7] text-white font-bold rounded-2xl hover:shadow-[0_0_30px_-5px_#0096c7] transition-all disabled:opacity-50 text-lg uppercase tracking-widest"
             >
-              {success}
-            </motion.p>
-          )}
+              {loading ? "Sending..." : "Send Message"}
+            </motion.button>
+
+            {success && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center text-green-400 font-bold bg-green-400/10 py-4 rounded-xl border border-green-400/20"
+              >
+                {success}
+              </motion.p>
+            )}
           </motion.form>
         </div>
         {/* FULL WIDTH GOOGLE MAP */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg mt-6"
-          >
-            <iframe
-              src="https://www.google.com/maps?q=Abuja,Nigeria&output=embed"
-              width="100%"
-              height="350"
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full"
-            ></iframe>
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg mt-6"
+        >
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63041.62484658319!2d7.393183291835803!3d9.054500997918742!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x104e0b0072b6dc15%3A0xa51bfd1b3698e582!2sQUALITY%20INSURANCE%20BROKERS%20LIMITED!5e0!3m2!1sen!2sng!4v1792363874058!5m2!1sen!2sng"
+            height="350"
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            className="w-full"
+          ></iframe>
+        </motion.div>
       </div>
     </section>
   );

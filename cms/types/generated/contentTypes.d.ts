@@ -1836,6 +1836,9 @@ export interface PluginUsersPermissionsUser
       'oneToMany',
       'api::motor-insurance-registration.motor-insurance-registration'
     >;
+    mustChangePassword: Schema.Attribute.Boolean &
+      Schema.Attribute.Private &
+      Schema.Attribute.DefaultTo<false>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{

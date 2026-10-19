@@ -1,95 +1,107 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+// Keep the existing NextAuth session structure and Strapi authentication source.
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
+
       async authorize(credentials) {
+        // Reject incomplete submissions before contacting Strapi.
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
         try {
-            console.log("--- OUTGOING STRAPI PAYLOAD CHECK ---");
-            console.log("Identifier being sent:", credentials?.email);
-            console.log("Password length being sent:", credentials?.password?.length || 0);
-            console.log("-------------------------------------");
-          // 1. STRAPI IDENTIFIER COMPATIBILITY LAYER
-          const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`, {
+          const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+
+          // Fail closed if the backend URL is not configured.
+          if (!strapiUrl) {
+            return null;
+          }
+
+          const response = await fetch(`${strapiUrl}/api/auth/local`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              identifier: credentials.email, // Strapi mandates 'identifier', not 'email'
+              // Strapi's local authentication endpoint expects "identifier".
+              identifier: credentials.email.trim(),
               password: credentials.password,
             }),
           });
 
-          const data = await res.json();
+          const data = await response.json();
 
-          if (!res.ok || !data.jwt) {
-            console.log("--- STRAPI AUTH REJECTION DETAILED DEBUG ---");
-            console.log("HTTP Status Code returned:", res.status);
-            console.log("Full Error Payload from Strapi:", JSON.stringify(data, null, 2));
-            console.log("--------------------------------------------");
-            console.error("Strapi authentication rejected:", data?.error?.message || "Invalid credentials");
+          // Strapi's first-login guard must prevent flagged accounts from
+          // receiving a JWT through this normal login endpoint.
+          if (!response.ok || !data?.jwt || !data?.user?.id) {
+            // Do not log passwords, tokens, or full authentication responses.
             return null;
           }
 
-          // 2. RETURNING THE RAW OBJECT TO THE JWT CALLBACK
-          // NextAuth requires the object returned here to fit its User interface, 
-          // but we can append custom fields like the API JWT.
+          // Preserve the existing user and agent fields used by the frontend.
           return {
-            id: data.user.id.toString(),
-            name: data.user.firstName || data.user.fullName,
+            id: String(data.user.id),
+            name:
+              data.user.firstName ||
+              data.user.fullName ||
+              data.user.username ||
+              data.user.email,
             email: data.user.email,
-            jwt: data.jwt, // Stash the JWT token here
+            jwt: data.jwt,
             isAgent: data.user.isAgent || false,
             agentId: data.user.agentId || null,
           };
-        } catch (error) {
-          console.error("Network runtime failure during authorization:", error);
+        } catch {
+          // Keep authentication failures generic and avoid logging credentials.
           return null;
         }
       },
     }),
   ],
+
   callbacks: {
-    // 3. PERSIST THE STRAPI JWT TO NEXTAUTH COOKIE
+    // Store the Strapi token and existing account fields in NextAuth's JWT.
     async jwt({ token, user }) {
-      // The 'user' object is only passed the very first time this callback runs after successful login
       if (user) {
         token.id = user.id;
-        token.jwt = (user as any).jwt; // Inject the Strapi JWT into the encrypted cookie
+        token.jwt = (user as any).jwt;
         token.isAgent = (user as any).isAgent;
         token.agentId = (user as any).agentId;
       }
+
       return token;
     },
 
-    // 4. EXPOSE THE DATA TO FRONTEND CLIENTS (like useSession)
+    // Preserve the session fields consumed by existing authenticated pages.
     async session({ session, token }) {
       if (session.user) {
         (session as any).id = token.id;
-        (session as any).jwt = token.jwt; // Now client components can make authenticated requests to Strapi!
+        (session as any).jwt = token.jwt;
         (session as any).user.isAgent = token.isAgent;
         (session as any).user.agentId = token.agentId;
       }
+
       return session;
     },
   },
+
   session: {
     strategy: "jwt",
   },
+
   pages: {
-    signIn: "/login", // Routes auth protection failures smoothly back to your login UI
+    signIn: "/login",
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
+
 export { handler as GET, handler as POST };

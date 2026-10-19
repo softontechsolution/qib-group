@@ -110,7 +110,36 @@ export default function SignupPage() {
     return io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:1337");
   }, []);
 
-  const pollStatus = async (documentId: string) => {
+  const getCertificateUrl = (data: any): string | null => {
+    const registration = data?.data ?? data;
+
+    const rawUrl =
+      registration?.certificateUrl ??
+      registration?.certificate?.url ??
+      registration?.certificate?.data?.attributes?.url ??
+      registration?.certificate?.data?.url ??
+      registration?.attributes?.certificateUrl;
+
+    if (typeof rawUrl !== "string" || !rawUrl.trim()) {
+      return null;
+    }
+
+    // Keep absolute URLs unchanged.
+    if (/^https?:\/\//i.test(rawUrl)) {
+      return rawUrl;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+
+    if (!baseUrl) {
+      console.error("NEXT_PUBLIC_STRAPI_URL is not configured.");
+      return null;
+    }
+
+    return `${baseUrl.replace(/\/$/, "")}/${rawUrl.replace(/^\//, "")}`;
+  };
+
+  const pollStatus = (documentId: string) => {
     setPolling(true);
 
     const interval = setInterval(async () => {
@@ -119,28 +148,45 @@ export default function SignupPage() {
           `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/motor-insurance-registrations/${documentId}`,
         );
 
-        const data = await res.json();
+        if (!res.ok) {
+          console.error("Certificate status request failed:", res.status);
+          return;
+        }
 
-        const stage = data?.data?.processingStage;
+        const data = await res.json();
+        console.log("REGISTRATION API RESPONSE:", data);
+        console.log("CERTIFICATE URL FROM API:", data?.data?.certificateUrl);
+        const registration = data?.data ?? data;
+        const stage = registration?.processingStage;
 
         if (stage) {
           setProcessingStage(stage);
         }
 
-        if (stage === "completed") {
+        const url = getCertificateUrl(data);
+
+        if (url) {
+          setCertificateUrl(url);
+        }
+
+        if (stage === "completed" && url) {
           clearInterval(interval);
           setPolling(false);
-          setSuccess("Policy generation complete. Certificate sent to email.");
-
-          // ✅ CAPTURE CERTIFICATE URL DURING POLLING
-          if (data?.data?.certificateUrl) {
-            setCertificateUrl(data.data.certificateUrl);
-          }
+          setProgress(100);
+          setIsProcessing(true);
+          setSuccess(
+            "Policy processing complete. Your certificate is ready to download.",
+          );
         }
       } catch (err) {
-        console.error("Polling error:", err);
+        console.error("Certificate status polling error:", err);
       }
-    }, 3000); // every 3 seconds
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+      setPolling(false);
+    };
   };
 
   const progressValue =
@@ -338,13 +384,22 @@ export default function SignupPage() {
 
   // SUBMITTING FORM DATA
   const submitApplication = async () => {
-    if (!formData.email || !formData.policyEmail) {
-      setSuccess("Please fill all required email fields");
+    const requiredPolicyEmail =
+      policyType === "individual"
+        ? formData.policyEmail
+        : formData.companyEmail;
+
+    if (!formData.email.trim() || !requiredPolicyEmail.trim()) {
+      setSuccess(
+        policyType === "individual"
+          ? "Please enter both your account email and policyholder email."
+          : "Please enter both your account email and company email.",
+      );
       setLoading(false);
       return;
     }
 
-    if (!/^\d{11}$/.test(formData.nin)) {
+    if (policyType === "individual" && !/^\d{11}$/.test(formData.nin)) {
       setSuccess("NIN must be exactly 11 digits");
       setLoading(false);
       return;
@@ -539,8 +594,11 @@ export default function SignupPage() {
       }
 
       // ✅ CAPTURE URL FROM SOCKET
-      if (data.certificateUrl) {
-        setCertificateUrl(data.certificateUrl);
+      console.log("SOCKET CERTIFICATE URL:", data?.certificateUrl);
+      console.log("FULL POLICY PROGRESS EVENT:", data);
+      const url = getCertificateUrl(data);
+      if (url) {
+        setCertificateUrl(url);
       }
 
       // ❌ DELETED: setTimeout(() => setIsProcessing(false), 1500)
@@ -587,18 +645,15 @@ export default function SignupPage() {
         </div>
 
         <nav className="space-y-6 text-gray-400">
-          <Link href="/" className="block hover:text-[#0096c7]">
+          <Link href="/vault" className="block hover:text-[#0096c7]">
             Dashboard
           </Link>
-
           <Link href="#" className="block hover:text-[#0096c7]">
             Insurance Plans
           </Link>
-
           <Link href="#" className="block hover:text-[#0096c7]">
             Claims
           </Link>
-
           <Link href="#" className="block hover:text-[#0096c7]">
             Support
           </Link>
@@ -1598,15 +1653,12 @@ export default function SignupPage() {
 
               <div className="flex flex-col w-full gap-4">
                 {/* Download Button */}
-                {certificateUrl && (
+                {certificateUrl ? (
                   <a
-                    href={
-                      certificateUrl.startsWith("http")
-                        ? certificateUrl
-                        : `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}${certificateUrl}`
-                    }
+                    href={certificateUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    download
                     className="w-full py-4 px-4 bg-[#0096c7] hover:bg-[#007aa8] text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
                     <svg
@@ -1624,11 +1676,16 @@ export default function SignupPage() {
                     </svg>
                     Download Certificate
                   </a>
+                ) : (
+                  <p className="text-sm text-amber-400 text-center">
+                    Your certificate is being prepared. The download link will
+                    appear when it is available.
+                  </p>
                 )}
 
                 {/* Proceed to Login / Dashboard */}
                 <Link
-                  href="/login"
+                  href="/vault"
                   className="w-full py-4 px-4 bg-transparent border border-white/20 hover:bg-white/5 text-white font-semibold rounded-xl transition-colors"
                 >
                   Go to My Vault

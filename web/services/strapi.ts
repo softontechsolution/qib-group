@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:1337/api"
+  baseURL: "http://localhost:1337/api",
 });
 
 export const getHomepage = async () => {
@@ -21,7 +21,7 @@ export const getProjects = async () => {
 
 export const submitContact = async (payload: Record<string, string>) => {
   const res = await API.post("/contacts", {
-    data: payload
+    data: payload,
   });
   return res.data;
 };
@@ -107,12 +107,10 @@ export const getHeroSlides = async () => {
 };
 
 export async function submitMotorInsurance(payload: Record<string, unknown>) {
-  const d =
-    (payload.data as Record<string, string | number | null>) ||
-    payload;
+  const d = (payload.data as Record<string, string | number | null>) || payload;
 
   const cleanEmail = (value: unknown) =>
-  typeof value === "string" && value.trim() ? value.trim() : null;
+    typeof value === "string" && value.trim() ? value.trim() : null;
 
   const cleanData = {
     // customer
@@ -154,10 +152,12 @@ export async function submitMotorInsurance(payload: Record<string, unknown>) {
     policyAddress: d.policyAddress ?? "",
 
     companyPolicyHolderName: d.companyPolicyHolderName ?? "",
-    companyPhone: d.policyType === "company" ? d.companyPhone ?? "" : null,
-    companyEmail: d.policyType === "company" ? cleanEmail(d.companyEmail) : null,
-    companyName: d.policyType === "company" ? d.companyName ?? "" : null,
-    companyAddress: d.policyType === "company" ? d.companyAddress ?? "" : null,
+    companyPhone: d.policyType === "company" ? (d.companyPhone ?? "") : null,
+    companyEmail:
+      d.policyType === "company" ? cleanEmail(d.companyEmail) : null,
+    companyName: d.policyType === "company" ? (d.companyName ?? "") : null,
+    companyAddress:
+      d.policyType === "company" ? (d.companyAddress ?? "") : null,
     premium: d.premium ?? null,
     sumAssured: d.sumAssured ?? null,
 
@@ -183,25 +183,21 @@ export async function submitMotorInsurance(payload: Record<string, unknown>) {
       body: JSON.stringify({
         data: cleanData,
       }),
-    }
+    },
   );
 
   const result = await res.json();
 
   if (!res.ok) {
     console.error("Strapi error:", result);
-    throw new Error(
-      result?.error?.message || "Failed to submit registration"
-    );
+    throw new Error(result?.error?.message || "Failed to submit registration");
   }
 
   return result;
 }
 
 export async function getNextPolicyCounter() {
-  const res = await fetch(
-    "http://localhost:1337/api/system-counter/next"
-  );
+  const res = await fetch("http://localhost:1337/api/system-counter/next");
 
   const data = await res.json();
   return data.value;
@@ -222,17 +218,67 @@ export const submitClaim = async (formData: FormData) => {
 };
 
 /**
- * Fetches all motor insurance registrations linked to a specific user ID
+ * Fetches motor insurance registrations linked to a customer.
+ * The Strapi JWT authenticates the request against protected API permissions.
  */
-export const getUserPolicies = async (userId: string | number) => {
-  const res = await API.get(`/motor-insurance-registrations?filters[user][id][$eq]=${userId}&populate=*`);
+export const getUserPolicies = async (userId: string | number, jwt: string) => {
+  if (!jwt) {
+    throw new Error("A valid login session is required to load policies.");
+  }
+
+  const res = await API.get(
+    `/motor-insurance-registrations?filters[user][id][$eq]=${encodeURIComponent(
+      String(userId),
+    )}&populate=*`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    },
+  );
+
   return res.data.data;
 };
 
 /**
- * Fetches all claims lodged by a specific user ID
+ * Fetches claims linked to a customer using the authenticated Strapi session.
  */
-export const getUserClaims = async (userId: string | number) => {
-  const res = await API.get(`/claims?filters[user][id][$eq]=${userId}&populate=*`);
+export const getUserClaims = async (userId: string | number, jwt: string) => {
+  if (!jwt) {
+    throw new Error("A valid login session is required to load claims.");
+  }
+
+  const res = await API.get(
+    `/claims?filters[user][id][$eq]=${encodeURIComponent(
+      String(userId),
+    )}&populate=*`,
+    {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    },
+  );
+
   return res.data.data;
+};
+
+/**
+ * Fetch both collections through the authenticated customer-vault endpoint.
+ * The backend determines ownership using the identity in the Strapi JWT.
+ */
+export const getUserVaultData = async (jwt: string) => {
+  if (!jwt) {
+    throw new Error("A valid login session is required to load the vault.");
+  }
+
+  const res = await API.get("/customer-auth/vault", {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  return {
+    policies: res.data?.policies,
+    claims: res.data?.claims,
+  };
 };
