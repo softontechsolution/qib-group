@@ -59,6 +59,11 @@
       "default": false,
       "configurable": false
     },
+    "mustChangePassword": {
+      "type": "boolean",
+      "default": false,
+      "private": true
+    },
     "role": {
       "type": "relation",
       "relation": "manyToOne",
@@ -95,11 +100,7 @@
     "agentType": {
       "type": "enumeration",
       "default": "none",
-      "enum": [
-        "agent",
-        "broker",
-        "none"
-      ]
+      "enum": ["agent", "broker", "none"]
     },
     "commissionBalance": {
       "type": "biginteger",

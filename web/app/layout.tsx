@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "./providers";
 import { Geist, Geist_Mono } from "next/font/google";
+import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "QIB Group Limited",
-  description: "QIB Group is a diversified conglomerate driving sustainable growth across multiple industries.",
+  description:
+    "QIB Group is a diversified conglomerate driving sustainable growth across multiple industries.",
 };
 
 import PageTransition from "@/components/PageTransition";
@@ -31,13 +33,15 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       data-scroll-behavior="smooth"
     >
-      <body suppressHydrationWarning className="min-h-full bg-white text-black selection:bg-[#0096c7]/30 selection:text-[#0096c7]">
+      <body
+        suppressHydrationWarning
+        className="min-h-full bg-white text-black selection:bg-[#0096c7]/30 selection:text-[#0096c7]"
+      >
         <AuthProvider>
-          <PageTransition>
-            {children}
-          </PageTransition>
+          <PageTransition>{children}</PageTransition>
         </AuthProvider>
         <script src="https://js.paystack.co/v1/inline.js"></script>
+        <CookieConsent />
       </body>
     </html>
   );

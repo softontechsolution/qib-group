@@ -1,38 +1,42 @@
 // web/app/(admin)/admin/layout.tsx
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
   Users,
   UserCheck,
   ShieldCheck,
   Building2,
   CreditCard,
   FileText,
-  Mail, 
-  ShieldAlert, 
-  LogOut, 
+  Mail,
+  ShieldAlert,
+  LogOut,
   Menu,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 // Updated Navigation Hubs with direct links for Email and NPF logs
 const navItems = [
-  { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Customers & Registrations', href: '/admin/customers', icon: Users },
-  { name: 'Agents & Commissions', href: '/admin/agents', icon: UserCheck },
-  { name: 'Policies & Stages', href: '/admin/policies', icon: ShieldCheck },
-  { name: 'Insurers', href: '/admin/insurers', icon: Building2 },
-  { name: 'Payments & Paystack', href: '/admin/payments', icon: CreditCard },
-  { name: 'Website Content', href: '/admin/content', icon: FileText },
-  { name: 'Email Error Logs', href: '/admin/logs/emails', icon: Mail },
-  { name: 'NPF Sync Error Logs', href: '/admin/logs/npf', icon: ShieldAlert },
+  { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Customers & Registrations", href: "/admin/customers", icon: Users },
+  { name: "Agents & Commissions", href: "/admin/agents", icon: UserCheck },
+  { name: "Policies & Stages", href: "/admin/policies", icon: ShieldCheck },
+  { name: "Insurers", href: "/admin/insurers", icon: Building2 },
+  { name: "Payments & Paystack", href: "/admin/payments", icon: CreditCard },
+  { name: "Website Content", href: "/admin/content", icon: FileText },
+  { name: "Email Error Logs", href: "/admin/logs/emails", icon: Mail },
+  { name: "Sync Error Logs", href: "/admin/logs/npf", icon: ShieldAlert },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -40,22 +44,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen bg-slate-950 text-slate-100 flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar Navigation */}
-      <aside className={`
+      <aside
+        className={`
         fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800
         transform transition-transform duration-200 ease-in-out flex flex-col justify-between
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}
+      >
         <div>
           <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
             <span className="font-extrabold text-xl tracking-wider text-emerald-400">
-              QIB GROUP <span className="text-xs text-slate-400 font-normal">ADMIN</span>
+              QIB GROUP{" "}
+              <span className="text-xs text-slate-400 font-normal">ADMIN</span>
             </span>
             <button className="lg:hidden" onClick={() => setSidebarOpen(false)}>
               <X className="w-6 h-6 text-slate-400" />
@@ -72,9 +79,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
-                    ${isActive 
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                      : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}
+                    ${
+                      isActive
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                    }
                   `}
                 >
                   <Icon className="w-5 h-5" />
@@ -108,9 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react"; // 👈 Added useSession here
 import { getLoginPage, getLoginSlides } from "@/services/strapi";
@@ -68,6 +69,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  // Controls whether the login password is visible.
+  const [showPassword, setShowPassword] = useState(false);
 
   // 1. Redirection route protection mechanism
   useEffect(() => {
@@ -113,7 +116,9 @@ export default function LoginPage() {
 
       if (result?.error) {
         console.log("Authentication failed message:", result.error);
-        setAuthError("Invalid credentials. Please verify your email and password.");
+        setAuthError(
+          "Invalid credentials. Please verify your email and password.",
+        );
         setIsLoading(false);
       } else {
         // Safe validation confirmed -> Dispatch user straight into the Vault Page Hub
@@ -136,10 +141,9 @@ export default function LoginPage() {
     );
   }
 
-  const logoUrl =
-    page.logo?.url
-      ? `http://localhost:1337${page.logo.url}`
-      : page.attributes?.logo?.data?.attributes?.url
+  const logoUrl = page.logo?.url
+    ? `http://localhost:1337${page.logo.url}`
+    : page.attributes?.logo?.data?.attributes?.url
       ? `http://localhost:1337${page.attributes.logo.data.attributes.url}`
       : "";
 
@@ -156,10 +160,9 @@ export default function LoginPage() {
                 {(() => {
                   const slide = slides[current];
 
-                  const imageUrl =
-                    slide.image?.url
-                      ? `http://localhost:1337${slide.image.url}`
-                      : slide.attributes?.image?.data?.attributes?.url
+                  const imageUrl = slide.image?.url
+                    ? `http://localhost:1337${slide.image.url}`
+                    : slide.attributes?.image?.data?.attributes?.url
                       ? `http://localhost:1337${slide.attributes.image.data.attributes.url}`
                       : "";
 
@@ -168,7 +171,11 @@ export default function LoginPage() {
                       <div className="relative w-full h-72">
                         <Image
                           src={imageUrl || "/placeholder.jpg"}
-                          alt={slide.title || slide.attributes?.title || "Login Slide"}
+                          alt={
+                            slide.title ||
+                            slide.attributes?.title ||
+                            "Login Slide"
+                          }
                           fill
                           className="object-cover rounded-3xl"
                         />
@@ -244,22 +251,45 @@ export default function LoginPage() {
                   required
                 />
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  disabled={isLoading}
-                  className="w-full p-4 rounded-xl bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-[#0096c7] disabled:opacity-50"
-                  required
-                />
+                {/* Password input with an accessible show/hide toggle. */}
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    disabled={isLoading}
+                    className="w-full p-4 pr-12 rounded-xl bg-gray-900 border border-gray-700 text-white focus:outline-none focus:border-[#0096c7] disabled:opacity-50"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    aria-pressed={showPassword}
+                    title={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 transition-colors hover:text-[#0096c7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0096c7] rounded-r-xl"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-5 w-5" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
                 <div className="flex justify-between text-sm text-gray-400">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input type="checkbox" className="accent-[#0096c7]" />
                     Remember me
                   </label>
 
-                  <Link href="/forgot-password" className="hover:text-[#0096c7] transition-colors">
+                  <Link
+                    href="/forgot-password"
+                    className="hover:text-[#0096c7] transition-colors"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -280,7 +310,10 @@ export default function LoginPage() {
                 </Link>
                 <p className="mt-6 text-center text-gray-400 text-sm">
                   Need help?{" "}
-                  <Link href="/insurance" className="text-[#0096c7] hover:underline">
+                  <Link
+                    href="/insurance"
+                    className="text-[#0096c7] hover:underline"
+                  >
                     Contact support
                   </Link>
                 </p>
